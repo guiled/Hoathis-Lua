@@ -109,6 +109,8 @@ class Interpreter implements \Hoa\Visitor\Visit {
         $this->_environment = new \Hoathis\Lua\Model\Environment('_G');
         $this->setFunction('print', array($this, 'stdPrint'));
         $this->setFunction('ipairs', array($this, 'stdIpairs'));
+        $this->setFunction('next', array($this, 'stdNext'));
+        $this->setFunction('pairs', array($this, 'stdPairs'));
 
         return;
     }
@@ -407,7 +409,8 @@ class Interpreter implements \Hoa\Visitor\Visit {
                             $nameChild = $children[0]->accept($this, $handle, self::AS_SYMBOL);
                         }
 						$valueChild = $children[1]->accept($this, $handle, self::AS_VALUE);
-						return array('key' => $nameChild, 'value' => new \Hoathis\Lua\Model\Value($valueChild));
+
+						return array('key' => $nameChild, 'value' => $valueChild);
 						break;
 				}
 				break;
@@ -854,6 +857,49 @@ class Interpreter implements \Hoa\Visitor\Visit {
         $returnedValues->addValue(new \Hoathis\Lua\Model\Value($table, \Hoathis\Lua\Model\Value::REFERENCE));
         $returnedValues->addValue(new \Hoathis\Lua\Model\Value(0));
         return $returnedValues;
+    }
+
+    public function stdNext($table, $key) {
+        $vg = new \Hoathis\Lua\Model\ValueGroup(null);
+        $keys = array_keys($table);
+        usort($keys, function ($a,$b) {         // the docs says it takes keys in an undefined order, but it seems Lua5.1 list numeric keys first and other keys then
+            if (is_numeric($a)) {
+                if (is_numeric($b)) {
+                    return $a - $b;
+                } else {
+                    return -1;
+                }
+            } elseif (is_numeric($b)) {
+                return 1;
+            } else {
+                return $a <= $b ? -1 : 0;
+            }
+        });
+
+        if (true === is_null($key)) {       // null when the loop is called for the first element
+            $place = 0;
+        } else {
+            $place = 1 + array_search($key, $keys);
+        }
+
+        if ($place < count($keys)) {
+            $newKey = $keys[$place];
+            $vg->addValue(new \Hoathis\Lua\Model\Value($newKey));
+            $vg->addValue(new \Hoathis\Lua\Model\Value($table[$newKey]));
+        } else {
+            $vg->addValue(null);
+            $vg->addValue(new \Hoathis\Lua\Model\Value(null));
+        }
+        return $vg;
+    }
+
+    public function stdPairs($table) {
+        $returnedValues = new \Hoathis\Lua\Model\ValueGroup(array());
+        $returnedValues->addValue(new \Hoathis\Lua\Model\Value(new \Hoathis\Lua\Model\Closure('__next', $this->_environment, array(), array($this,'stdNext'))));
+        $returnedValues->addValue(new \Hoathis\Lua\Model\Value($table, \Hoathis\Lua\Model\Value::REFERENCE));
+        $returnedValues->addValue(new \Hoathis\Lua\Model\Value(null));
+        return $returnedValues;
+
     }
 }
 
