@@ -110,8 +110,11 @@
 chunk:
     block()
 
-block:
-	statement()* return_statement()? #block
+#block:
+	block_code()
+
+block_code:
+	statement()* return_statement()?
 
 statement:
     ::semicolon::
@@ -119,7 +122,7 @@ statement:
   | function_call()
   | label()
   | ::goto:: <identifier> #goto
-  | ::do:: block() ::end::
+  | ::do:: block_code() ::end:: #do_block
   | ::while:: expression() ::do:: block() ::end:: #while_loop
   | ::repeat:: block() ::until:: expression() #do_while_loop
   |   ::if::   expression() ::then:: block()
