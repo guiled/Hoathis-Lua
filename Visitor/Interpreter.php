@@ -341,7 +341,7 @@ class Interpreter implements \Hoa\Visitor\Visit {
 			case "#function_lambda":
                 $nbchildren = count($children);
                 $body       = $children[$nbchildren-1];
-                if ($nbchildren > 2) {
+                if ($nbchildren > 2) {              // there are parameters
                     $parameters = $children[1]->accept($this, $handle, self::AS_SYMBOL);
                 }
                 if (false === isset($parameters)) {
@@ -435,7 +435,7 @@ class Interpreter implements \Hoa\Visitor\Visit {
                 $numericIndex = 1;      // this variable is for compatibility between php array and lua table (first numeric index is 1)
 				foreach($children as $child) {
 					$field = $child->accept($this, $handle, $eldnah);
-					$value = $field['value']->getValue();
+					$value = $field['value'];
 					if (true === isset($field['key'])) {
 						$key = $field['key'];
 						$arr[$key] = $value;
@@ -503,7 +503,11 @@ class Interpreter implements \Hoa\Visitor\Visit {
                              'attempt to index field \'%s\' (a nil value) in %s', 13, array($field, $symbol));
                         } else {
                             $parentVar = $var[$field];
-                            $var = $parentVar->getValue();
+                            if ($parentVar instanceof \Hoathis\Lua\Model\Value) {
+                                $var = $parentVar->getValue();
+                            } else {
+                                $var = $parentVar;
+                            }
                             $sep_ = '.';
                             $_sep = '';
                             $mode = self::AS_SYMBOL;
@@ -532,7 +536,7 @@ class Interpreter implements \Hoa\Visitor\Visit {
                     }
                 }
 
-                return new \Hoathis\Lua\Model\Value($var[$field]);
+                return $var[$field];
 
 				break;
 
