@@ -144,8 +144,9 @@ return_statement:
     ::dcolon:: <identifier> ::dcolon::
 
 function_name:
-    <identifier> ( ::point:: <identifier> )*
-    ( ::colon:: <identifier> )?
+	(<identifier> ( ::point:: <identifier> #table_access_self)*
+    ::colon:: <identifier> #table_access_self)
+  | (<identifier> ( ::point:: <identifier> #table_access)*)
 
 variables_get:
 	variable_get()
@@ -235,7 +236,7 @@ expression_term:
 //        <bracket_> expression() ::_bracket:: #table_access
 //      | ::point:: ( <identifier> | function_call() ) #table_access
 //    )*
-//    ( ::colon:: <identifier> )? arguments()
+//    ( ::colon:: <identifier> #table_access_method)? arguments()
 
 #function_call:
     (<identifier>
@@ -245,9 +246,13 @@ expression_term:
 
 table_access_function:
    ( <identifier> | ::parenthesis_:: expression() ::_parenthesis:: )
-	(	(<bracket_> expression() ::_bracket:: #byval) #table_access
-		| ::point:: ( <identifier> | function_call() ) #table_access )*
-	( ::colon:: <identifier> #table_access )?
+	(
+		((	(<bracket_> expression() ::_bracket:: #byval) #table_access_self
+			| ::point:: ( <identifier> | function_call() ) #table_access_self )*
+		( ::colon:: <identifier> #table_access_self ))
+	|	((	(<bracket_> expression() ::_bracket:: #byval) #table_access
+			| ::point:: ( <identifier> | function_call() ) #table_access )*)
+	)
 
 #arguments:
     ::parenthesis_:: expressions()? ::_parenthesis::

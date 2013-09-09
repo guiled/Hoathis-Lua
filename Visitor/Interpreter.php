@@ -337,8 +337,13 @@ class Interpreter implements \Hoa\Visitor\Visit {
                         case '#local_function':
                 $local_function = true;
             case '#function':
-                $symbol     = reset($children)->accept($this, $handle, $eldnah);
+                $symbolChild = $children[0];
+                $selfFunction = ($symbolChild->getId() === '#table_access_self');
+                $symbol     = $symbolChild->accept($this, $handle, self::AS_SYMBOL);
 			case "#function_lambda":
+                if (false === isset($selfFunction)) {
+                    $selfFunction = false;
+                }
                 $nbchildren = count($children);
                 $body       = $children[$nbchildren-1];
                 if ($nbchildren > 2) {              // there are parameters
@@ -346,6 +351,9 @@ class Interpreter implements \Hoa\Visitor\Visit {
                 }
                 if (false === isset($parameters)) {
                     $parameters = array();
+                }
+                if ($selfFunction) {        // a function declared with colon in a table accepts a hidden first parameter called "self"
+                    array_unshift($parameters, 'self');
                 }
                 if (false === isset($symbol)) {
                     $closuresymbol = 'lambda_' . md5(print_r($body, true));
@@ -359,13 +367,18 @@ class Interpreter implements \Hoa\Visitor\Visit {
                     $body
                 );
                 if (true === isset($symbol)) {         // it's a function declaration with the symbol
-                    if (isset($local_function)) {
-                        $this->_environment->localSet($symbol, new \Hoathis\Lua\Model\Variable($symbol, $this->_environment));
+                    if ($symbol instanceof \Hoathis\Lua\Model\Value) {          // symbol is an array that must receive a closure
+                        $symbol->setValue(new \Hoathis\Lua\Model\Value($closure));
+                        return $symbol;
                     } else {
-                        $this->_environment[$symbol] = new \Hoathis\Lua\Model\Variable($symbol, $this->_environment);
+                        if (isset($local_function)) {
+                            $this->_environment->localSet($symbol, new \Hoathis\Lua\Model\Variable($symbol, $this->_environment));
+                        } else {
+                            $this->_environment[$symbol] = new \Hoathis\Lua\Model\Variable($symbol, $this->_environment);
+                        }
+                        $this->_environment[$symbol]->setValue(new \Hoathis\Lua\Model\Value($closure));
+                        return $this->_environment[$symbol];
                     }
-                    $this->_environment[$symbol]->setValue(new \Hoathis\Lua\Model\Value($closure));
-                    return $this->_environment[$symbol];
                 } else {                // it's a lambda function
                     return new \Hoathis\Lua\Model\Value($closure);//, \Hoathis\Lua\Model\Value::REFERENCE);
                 }
@@ -373,6 +386,7 @@ class Interpreter implements \Hoa\Visitor\Visit {
 
 
             case '#function_call':
+                $selfFunction = ($children[0]->getId() === '#table_access_self');
                 $symbol    = $children[0]->accept($this, $handle, self::AS_SYMBOL);
                 $arguments = $children[1]->accept($this, $handle, self::AS_SYMBOL);
 
@@ -399,7 +413,10 @@ class Interpreter implements \Hoa\Visitor\Visit {
 
                 $oldEnvironment = $this->_environment;
                 //$this->_environment = $closure;
-                $out                = $closure->call($arguments, $this);
+                if (true === $selfFunction) {           // a function called with colon in a table receives a hidden parameter called self (the function container)
+                    array_unshift($arguments, $symbol->getContainer());
+                }
+                $out = $closure->call($arguments, $this);
                 //$this->_environment = $oldEnvironment;
 
                 return $out;
@@ -469,14 +486,15 @@ class Interpreter implements \Hoa\Visitor\Visit {
 				}
 				break;
 
+			case '#table_access_self':
 			case '#table_access':
-				if (false === isset($this->_environment[$children[0]->getValueValue()])) {
-					throw new \Hoathis\Lua\Exception\Interpreter(
-                            'Symbol %s is unknown', 1, $children[0]->getValueValue());
-				}
-
                 $symbol = $children[0]->getValueValue();
-                $var = $this->_environment[$symbol]->getValue()->getValue();
+				if (false === isset($this->_environment[$symbol])) {
+					throw new \Hoathis\Lua\Exception\Interpreter(
+                            'Symbol %s is unknown', 1, $symbol);
+				}
+                $precValue = $this->_environment[$symbol]->getValue();
+                $var = $precValue->getValue();
                 if (false === is_array($var)) {
 					throw new \Hoathis\Lua\Exception\Interpreter(
                             'Symbol %s is not a table', 1, $symbol);
@@ -523,6 +541,9 @@ class Interpreter implements \Hoa\Visitor\Visit {
                 } else {
                     $field = $children[$i]->getValueValue();
                 }
+                if ($parentVar instanceof \Hoathis\Lua\Model\Value) {
+                    $precValue = $parentVar;
+                }
                 $symbol .= $sep_ . $field . $_sep;
                 if (false === array_key_exists($field, $var)) {
                     if ($eldnah === self::AS_VALUE) {
@@ -535,7 +556,10 @@ class Interpreter implements \Hoa\Visitor\Visit {
                         }
                     }
                 }
-
+                $precValue->setValue(new \Hoathis\Lua\Model\Value($var));
+                if ($var[$field] instanceof \Hoathis\Lua\Model\Value && '#table_access_self' === $type) {
+                    $var[$field]->setContainer($precValue);
+                }
                 return $var[$field];
 
 				break;

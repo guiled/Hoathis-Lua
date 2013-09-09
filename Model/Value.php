@@ -61,6 +61,7 @@ class Value {
 
     protected $_value      = null;
     protected $_referenceType = false;
+    protected $_container;
 
     const SCALAR = 0;
     const REFERENCE = 1;
@@ -127,6 +128,14 @@ class Value {
 
     public function getPHPValue() {
         return $this->getValue();
+    }
+
+    public function setContainer($container) {
+        $this->_container = $container;
+    }
+
+    public function getContainer() {
+        return $this->_container;
     }
 }
 
