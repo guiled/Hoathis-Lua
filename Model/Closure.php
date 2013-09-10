@@ -98,17 +98,22 @@ class Closure extends Environment {
         $interpreter->setRoot($this);
     	if ($this->getBody() instanceof \Hoa\Compiler\Llk\TreeNode) {
 
-			foreach($this->_parameters as $parameter) {
-
-				$argument = current($arguments);
-
-				if(false === $argument) {
-                    $parameter->setValue(new Value(null));
+			foreach($this->_parameters as $paramname => $parameter) {
+                if ($paramname === '...') {
+                    $value = new ValueGroup(null);
+                    while (list($k,$argument) = each($arguments)) {
+                        $value->addValue($argument);
+                    }
+                    $parameter->setValue($value);
                 } else {
-    				$parameter->setValue($argument);
-                }
+                    $argument_parts = each($arguments);
 
-				next($arguments);
+                    if (false === $argument_parts) {
+                        $parameter->setValue(new Value(null));
+                    } else {
+                        $parameter->setValue($argument_parts[1]);
+                    }
+                }
 			}
 
 			$out = $this->getBody()->accept($interpreter);
@@ -120,7 +125,11 @@ class Closure extends Environment {
 		} elseif (true === is_callable($this->_body)) {
             $argValues = array();
             foreach ($arguments as $arg) {
-                $argValues[] = $arg->getPHPValue();
+                if ($arg instanceof ValueGroup) {
+                    $argValues = array_merge($argValues, $arg->getPHPValue());
+                } else {
+                    $argValues[] = $arg->getPHPValue();
+                }
             }
             $interpreter->setRoot($oldEnvironment);
 			return call_user_func_array($this->_body, $argValues);
@@ -133,6 +142,10 @@ class Closure extends Environment {
     public function getBody ( ) {
 
         return $this->_body;
+    }
+
+    public function isFunctionContext() {
+        return true;
     }
 }
 

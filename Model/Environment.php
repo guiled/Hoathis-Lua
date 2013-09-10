@@ -140,6 +140,14 @@ class Environment implements \ArrayAccess {
     public function getDeclaredSymbols() {
         return array_keys($this->_symbols);
     }
+
+    public function isFunctionContext() {
+        if (false === is_null($this->_parent)) {
+            return $this->_parent->isFunctionContext();
+        } else {
+            return false;
+        }
+    }
 }
 
 }

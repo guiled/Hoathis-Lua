@@ -269,8 +269,8 @@ _function_body:
     block() #function_body
 
 #parameters:
-    names() ( ::comma:: ::tpoint:: )?
-  | ::tpoint::
+    names() ( ::comma:: ::tpoint:: #tpointfcn)?
+  | ::tpoint:: #tpointfcn
 
 table_constructor:
     ::brace_:: fields()? ::_brace:: #table
