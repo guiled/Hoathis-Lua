@@ -214,11 +214,21 @@ class Interpreter implements \Hoa\Visitor\Visit {
                 }
                 return $group;
 
+            case '#onlyfirst':
+                $childValue = $children[0]->accept($this, $handle,$eldnah);
+                if ($childValue instanceof \Hoathis\Lua\Model\ValueGroup) {
+                    $values = $childValue->getValue();
+                    return $values[0];
+                } else {
+                    return $childValue;
+                }
+
             case '#negative':
                 return -($children[0]->accept($this, $handle, self::AS_VALUE));
 
             case '#length':
                 $value = $children[0]->accept($this, $handle, self::AS_VALUE);
+                var_dump($value);
                 if (true === is_array($value)) {
                     return count($value);
                 } elseif (true === is_string($value)) {

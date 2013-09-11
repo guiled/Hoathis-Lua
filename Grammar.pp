@@ -158,7 +158,7 @@ variables_set:
 
 variable_get:
 	variable()
-  | ::parenthesis_:: expression() ::_parenthesis::
+  | ::parenthesis_:: expression() ::_parenthesis:: #onlyfirst
   | (
 		::parenthesis_:: expression() ::_parenthesis::
 	)

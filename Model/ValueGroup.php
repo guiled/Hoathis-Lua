@@ -72,7 +72,11 @@ class ValueGroup extends Value implements \ArrayAccess {
     }
 
     public function addValue($value) {
-        $this->_value[] = $value;
+        if ($value instanceof ValueGroup) {
+            $this->_value = array_merge($this->_value, $value->getValue());
+        } else {
+            $this->_value[] = $value;
+        }
     }
 
     public function offsetExists($offset) {
