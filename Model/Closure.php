@@ -127,8 +127,10 @@ class Closure extends Environment {
             foreach ($arguments as $arg) {
                 if ($arg instanceof ValueGroup) {
                     $argValues = array_merge($argValues, $arg->getPHPValue());
-                } else {
+                } elseif ($arg instanceof Value) {
                     $argValues[] = $arg->getPHPValue();
+                } else {
+                    $argValues[] = $arg;
                 }
             }
             $interpreter->setRoot($oldEnvironment);

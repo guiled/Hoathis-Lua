@@ -62,6 +62,7 @@ class Value {
     protected $_value      = null;
     protected $_referenceType = false;
     protected $_container;
+    protected $setValueFunction;
 
     const SCALAR = 0;
     const REFERENCE = 1;
@@ -75,11 +76,18 @@ class Value {
         } else {
             $this->_value = $value;
         }
-
-        return;
+        $this->setValueFunction = array($this, 'setValueFunction');
     }
 
-    public function setValue ( $value ) {
+    public function setSetValueFunction($setValueFunction) {
+        $this->setValueFunction = $setValueFunction;
+    }
+
+    public function setValue($value) {
+        return call_user_func($this->setValueFunction, $value);
+    }
+
+    protected function setValueFunction ( $value ) {
         if ($value instanceof self) {
             $val = $value->getValue();
         } else {

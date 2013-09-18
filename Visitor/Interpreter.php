@@ -107,10 +107,10 @@ class Interpreter implements \Hoa\Visitor\Visit {
     public function __construct ( ) {
 
         $this->_environment = new \Hoathis\Lua\Model\Environment('_G');
-        $this->setFunction('print', array($this, 'stdPrint'));
-        $this->setFunction('ipairs', array($this, 'stdIpairs'));
-        $this->setFunction('next', array($this, 'stdNext'));
-        $this->setFunction('pairs', array($this, 'stdPairs'));
+        $this->_environment->setFunction('print', array($this, 'stdPrint'));
+        $this->_environment->setFunction('ipairs', array($this, 'stdIpairs'));
+        $this->_environment->setFunction('next', array($this, 'stdNext'));
+        $this->_environment->setFunction('pairs', array($this, 'stdPairs'));
 
         return;
     }
@@ -192,7 +192,6 @@ class Interpreter implements \Hoa\Visitor\Visit {
                 }
                 $leftVar = $children[0]->accept($this, $handle,$eldnah);
                 $rightVar = $children[1]->accept($this, $handle,self::AS_VALUE);
-
                 if ($leftVar instanceof \Hoathis\Lua\Model\ValueGroup) {
                     $symbols = $leftVar->getValue();
                 } else {
@@ -228,7 +227,6 @@ class Interpreter implements \Hoa\Visitor\Visit {
 
             case '#length':
                 $value = $children[0]->accept($this, $handle, self::AS_VALUE);
-                var_dump($value);
                 if (true === is_array($value)) {
                     return count($value);
                 } elseif (true === is_string($value)) {
@@ -400,12 +398,19 @@ class Interpreter implements \Hoa\Visitor\Visit {
             case '#function_call':
                 $selfFunction = ($children[0]->getId() === '#table_access_self');
                 $symbol    = $children[0]->accept($this, $handle, self::AS_SYMBOL);
-                $arguments = $children[1]->accept($this, $handle, self::AS_SYMBOL);
+                if (true === isset($children[1])) {
+                    $arguments = $children[1]->accept($this, $handle, self::AS_SYMBOL);
+                } else {
+                    $arguments = array();
+                }
+//                var_dump($symbol);
 
                 if ($symbol instanceof \Hoathis\Lua\Model\Value) {
                     $closure = $symbol->getValue();
                 } else {
-                    if (true === function_exists($symbol)) {
+//                    var_dump($children[0]);
+//                    var_dump($symbol);
+                    if (true === is_callable($symbol)) {
                         $argValues = array();
                         foreach ($arguments as $arg) {
                             if ($arg instanceof ValueGroup) {
@@ -502,17 +507,19 @@ class Interpreter implements \Hoa\Visitor\Visit {
 
 			case '#table_access_self':
 			case '#table_access':
+                $precValue = $children[0]->accept($this, $handle, self::AS_VALUE);
+                if (true === is_null($precValue->getValue())) {
+                    throw new \Hoathis\Lua\Exception\Interpreter(
+                                'Unknown symbol %s', 1, $children[0]->getValueValue());
+                }
                 $symbol = $children[0]->getValueValue();
-				if (false === isset($this->_environment[$symbol])) {
-					throw new \Hoathis\Lua\Exception\Interpreter(
-                            'Symbol %s is unknown', 1, $symbol);
-				}
-                $precValue = $this->_environment[$symbol]->getValue();
                 $var = $precValue->getValue();
-                if (false === is_array($var)) {
+                if (false === is_array($var)
+                        && (!($var instanceof \ArrayAccess))) {
 					throw new \Hoathis\Lua\Exception\Interpreter(
-                            'Symbol %s is not a table', 1, $symbol);
+                            'Symbol %s is not a table', 1, $children[0]->getValueValue());
 				}
+
                 $nbchildren = count($children);
                 $sep_ = '.';
                 $_sep = '';
@@ -524,13 +531,16 @@ class Interpreter implements \Hoa\Visitor\Visit {
                         $_sep = '\']';
                         $mode = self::AS_VALUE;
                     } else {
+//                        var_dump($children[$i]);
                         if ($mode === self::AS_VALUE) {
                             $field = $children[$i]->accept($this, $handle, self::AS_VALUE)->getValue();
                         } else {
-                            $field = $children[$i]->getValueValue();
+                            $field = $children[$i]->accept($this, $handle, self::AS_SYMBOL);
                         }
+//                        var_dump($field);
                         $symbol .= $sep_ . $field . $_sep;
-                        if (false === array_key_exists($field, $var)) {
+                        if ( ($var instanceof \Hoathis\Lua\Model\Wrapper && false === isset($var[$field]))
+                            || (true === is_array($var) && false === array_key_exists($field, $var) ) ) {
                             throw new \Hoathis\Lua\Exception\Interpreter(
                              'attempt to index field \'%s\' (a nil value) in %s', 13, array($field, $symbol));
                         } else {
@@ -543,7 +553,7 @@ class Interpreter implements \Hoa\Visitor\Visit {
                             $sep_ = '.';
                             $_sep = '';
                             $mode = self::AS_SYMBOL;
-                            if (false === is_array($var)) {
+                            if (false === is_array($var) && !($var instanceof \Hoathis\Lua\Model\Wrapper)) {
                                 throw new \Hoathis\Lua\Exception\Interpreter(
                                      'Symbol %s is not a table', 1, $symbol);
                             }
@@ -558,8 +568,11 @@ class Interpreter implements \Hoa\Visitor\Visit {
                 if ($parentVar instanceof \Hoathis\Lua\Model\Value) {
                     $precValue = $parentVar;
                 }
-                $symbol .= $sep_ . $field . $_sep;
-                if (false === array_key_exists($field, $var)) {
+                $symbol .= $sep_ . $children[$i]->getValueValue() . $_sep;
+//                var_dump($symbol);
+//                    var_dump($var);
+                if ( ($var instanceof \Hoathis\Lua\Model\Wrapper && false === isset($var[$field]))
+                   || (true === is_array($var) && false === array_key_exists($field, $var) ) ) {
                     if ($eldnah === self::AS_VALUE) {
                         $var[$field] = null;
                     } else {
@@ -574,6 +587,7 @@ class Interpreter implements \Hoa\Visitor\Visit {
                 if ($var[$field] instanceof \Hoathis\Lua\Model\Value && '#table_access_self' === $type) {
                     $var[$field]->setContainer($precValue);
                 }
+//                var_dump($var[$field]);
                 return $var[$field];
 
 
@@ -924,10 +938,6 @@ class Interpreter implements \Hoa\Visitor\Visit {
         }
     }
 
-    public function setFunction($function_name, $callback) {
-        $this->_environment[$function_name] = new \Hoathis\Lua\Model\Variable($function_name, $this->_environment);
-        $this->_environment[$function_name]->setValue(new \Hoathis\Lua\Model\Value(new \Hoathis\Lua\Model\Closure($function_name, $this->_environment, array(), $callback)));
-    }
 
     public function stdPrint() {
         $args = func_get_args();

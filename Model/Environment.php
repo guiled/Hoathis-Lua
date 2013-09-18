@@ -41,7 +41,15 @@ from('Hoathis')
 /**
  * \Hoathis\Lua\Exception\Model
  */
--> import('Lua.Exception.Model');
+-> import('Lua.Exception.Model')
+/**
+ * \Hoathis\Lua\Exception\Model
+ */
+-> import('Lua.Model.WrapperObject')
+/**
+ * \Hoathis\Lua\Exception\Model
+ */
+-> import('Lua.Model.WrapperArray');
 
 }
 
@@ -148,6 +156,21 @@ class Environment implements \ArrayAccess {
             return false;
         }
     }
+
+    public function wrap($name, $obj) {
+        if (true === is_object($obj)) {
+            $wrapper = new WrapperObject($obj);
+        } elseif (true === is_array($obj)) {
+            $wrapper = new WrapperArray($obj);
+        }
+        $this->_symbols[$name] = new Value($wrapper, Value::REFERENCE);
+    }
+
+    public function setFunction($function_name, $callback) {
+        $this->_symbols[$function_name] = new \Hoathis\Lua\Model\Variable($function_name, $this);
+        $this->_symbols[$function_name]->setValue(new \Hoathis\Lua\Model\Value(new \Hoathis\Lua\Model\Closure($function_name, $this, array(), $callback)));
+    }
+
 }
 
 }

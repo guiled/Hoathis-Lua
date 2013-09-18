@@ -247,10 +247,10 @@ expression_term:
 table_access_function:
    ( <identifier> | ::parenthesis_:: expression() ::_parenthesis:: )
 	(
-		((	(<bracket_> expression() ::_bracket:: #byval) #table_access_self
+		((	(<bracket_> expression() ::_bracket:: ) #table_access_self
 			| ::point:: ( <identifier> | function_call() ) #table_access_self )*
 		( ::colon:: <identifier> #table_access_self ))
-	|	((	(<bracket_> expression() ::_bracket:: #byval) #table_access
+	|	((	(<bracket_> expression() ::_bracket:: ) #table_access
 			| ::point:: ( <identifier> | function_call() ) #table_access )*)
 	)
 
