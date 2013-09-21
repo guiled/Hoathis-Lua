@@ -160,10 +160,15 @@ class Environment implements \ArrayAccess {
     public function wrap($name, $obj) {
         if (true === is_object($obj)) {
             $wrapper = new WrapperObject($obj);
+            $type = Value::REFERENCE;
         } elseif (true === is_array($obj)) {
             $wrapper = new WrapperArray($obj);
+            $type = Value::REFERENCE;
+        } else {
+            $wrapper = $name;
+            $type = Value::REFERENCE;
         }
-        $this->_symbols[$name] = new Value($wrapper, Value::REFERENCE);
+        $this->_symbols[$name] = new Value($wrapper, $type);
     }
 
     public function setFunction($function_name, $callback) {
