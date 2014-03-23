@@ -139,7 +139,7 @@ class WrapperArray implements Wrapper {
     }
 
     public function getPHPValue() {
-        return $this->obj;
+        return $this->array;
     }
 
 }
