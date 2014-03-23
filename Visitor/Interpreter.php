@@ -241,7 +241,6 @@ class Interpreter implements \Hoa\Visitor\Visit {
 
                 if(null !== $parent && '#substraction' === $parent->getId()) {
                     return new \Hoathis\Lua\Model\Value($child0->getValue() - $child1->getValue());
-
                 }
 
                 return new \Hoathis\Lua\Model\Value($child0->getValue() + $child1->getValue());
@@ -897,6 +896,8 @@ class Interpreter implements \Hoa\Visitor\Visit {
             } else {
                 $this->_environment[$symbol]->setValue($value);
             }
+        } elseif ($value instanceof \Hoathis\Lua\Model\WrapperScalar) {
+            $this->_environment[$symbol]->setValue(new \Hoathis\Lua\Model\Value($value->getValue()));
         } else {
             $this->_environment[$symbol]->setValue(new \Hoathis\Lua\Model\Value($value));
         }
