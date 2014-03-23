@@ -166,7 +166,6 @@ class WrapperObject implements Wrapper {
     }
 
     public function __destruct() {
-        var_dump($this->obj);
     }
 
     public function getValue() {

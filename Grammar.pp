@@ -73,8 +73,14 @@
 %token  minus         \-
 %token  times         \*
 %token  div           /
+%token  idiv          //
 %token  modulo        %
 %token  pow           \^
+%token  band          &
+%token  bor           \|
+%token  bnot          ~
+%token  shl           <<
+%token  shr           >>
 %token  length        #
 %token  dequal        ==
 %token  nequal        ~=
