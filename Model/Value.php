@@ -135,6 +135,18 @@ class Value {
     }
 
     public function getPHPValue() {
+        $val = $this->getValue();
+        if (true === is_array($val)) {
+            $result = array();
+            foreach ($val as $k => $v) {
+                if ($v instanceof self) {
+                    $result[$k] = $v->getPHPValue();
+                } else {
+                    $result[$k] = $v;
+                }
+            }
+            return $result;
+        }
         return $this->getValue();
     }
 
