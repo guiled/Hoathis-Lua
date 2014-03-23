@@ -157,7 +157,7 @@ class Environment implements \ArrayAccess {
         }
     }
 
-    public function wrap($name, $obj) {
+    public function wrap($name, &$obj) {
         if (true === is_object($obj)) {
             $wrapper = new WrapperObject($obj);
             $type = Value::REFERENCE;
@@ -165,7 +165,7 @@ class Environment implements \ArrayAccess {
             $wrapper = new WrapperArray($obj);
             $type = Value::REFERENCE;
         } else {
-            $wrapper = $name;
+            $wrapper = new WrapperScalar($obj);
             $type = Value::REFERENCE;
         }
         $this->_symbols[$name] = new Value($wrapper, $type);
