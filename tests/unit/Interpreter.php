@@ -5,6 +5,23 @@ use \tests\unit\Luatoum;
 
 class Interpreter extends Luatoum {
 
+    public function testPrint() {
+        $this
+            ->assert('Test if print send to output')
+            ->luaOutput('print(42);')->isEqualTo("42" . PHP_EOL);
+    }
+
+    public function testArithmetic() {
+        $this
+            ->assert('Addition')
+            ->luaOutput('print(1+2);')->isEqualTo("3" . PHP_EOL)
+            ->if
+            ->luaOutput('a=3;b=4;print(a+b);')->isEqualTo("7" . PHP_EOL)
+
+            ->assert('Test left assignation of basic operators')
+            ->luaOutput('print(4/2*3);')->isEqualTo("6" . PHP_EOL)
+            ;
+    }
 
     public function testPhpLuaIntegration() {
         $this
