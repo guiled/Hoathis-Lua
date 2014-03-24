@@ -9,7 +9,3 @@ from('Hoa')
 
 from('Hoathis')
 -> import('Lua.Visitor.Interpreter');
-
-$compiler = \Hoa\Compiler\Llk::load(
-    new \Hoa\File\Read('Grammar.pp')
-);
