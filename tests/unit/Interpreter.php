@@ -18,8 +18,10 @@ class Interpreter extends Luatoum {
             ->if
             ->luaOutput('a=3;b=4;print(a+b);')->isEqualTo("7" . PHP_EOL)
 
-            ->assert('Test left assignation of basic operators')
-            ->luaOutput('print(4/2*3);')->isEqualTo("6" . PHP_EOL)
+            ->assert('Test division multiplication parenthesis')
+            ->luaOutput('print((4/2)*3);')->isEqualTo("6" . PHP_EOL)
+//            ->assert('Test left assignation of basic operators')
+//            ->luaOutput('print(4/2*3);')->isEqualTo("6" . PHP_EOL)
             ;
     }
 
@@ -61,4 +63,14 @@ class Interpreter extends Luatoum {
 
             ;
     }
+
+    public function testArrayHandling() {
+        $this
+            ->assert('Simple array creation')
+            ->lua('a={1,2};')
+            ->isParsed();
+
+    }
+
+
 }

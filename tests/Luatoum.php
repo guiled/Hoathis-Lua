@@ -18,6 +18,11 @@ class Luatoum extends atoum {
      */
     private $visitor;
 
+    public function __construct() {
+        parent::__construct();
+        $this->define->Lua = 'tests\Lua';
+    }
+
     protected function execute($input) {
         $ast = $this->getCompiler()->parse($input);
 
