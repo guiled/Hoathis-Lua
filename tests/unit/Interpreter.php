@@ -8,18 +8,19 @@ class Interpreter extends Luatoum {
     public function testPrint() {
         $this
             ->assert('Test if print send to output')
-            ->luaOutput('print(42);')->isEqualTo("42" . PHP_EOL);
+            ->lua('print(42);')->output("42" . PHP_EOL);
     }
 
     public function testArithmetic() {
         $this
             ->assert('Addition')
-            ->luaOutput('print(1+2);')->isEqualTo("3" . PHP_EOL)
-            ->if
-            ->luaOutput('a=3;b=4;print(a+b);')->isEqualTo("7" . PHP_EOL)
+            ->lua('print(1+2);')->output("3" . PHP_EOL)
+
+            ->lua('a=3;b=4;print(a+b);')->output("7" . PHP_EOL)
 
             ->assert('Test division multiplication parenthesis')
-            ->luaOutput('print((4/2)*3);')->isEqualTo("6" . PHP_EOL)
+            ->lua('print((4/2)*3);')->output("6" . PHP_EOL)
+
 //            ->assert('Test left assignation of basic operators')
 //            ->luaOutput('print(4/2*3);')->isEqualTo("6" . PHP_EOL)
             ;
@@ -27,34 +28,31 @@ class Interpreter extends Luatoum {
 
     public function testPhpLuaIntegration() {
         $this
-            ->if ($env = $this->getVisitor()->getRoot())
-                ->and($a = 1)
-                ->and($env->wrap('a', $a))
+            ->if($a = 1)
             ->assert('Wrapping scalar value : read value')
-            ->luaOutput('print(a);')->isEqualTo($a . PHP_EOL)
-
+            ->lua('print(a);')->wrap('a', $a)->output($a . PHP_EOL)
+            
             ->assert('Wrapping scalar value : assign value')
-            ->luaOutput('b=a;print(b);')->isEqualTo($a . PHP_EOL)
+            ->lua('b=a;print(b);')->wrap('a', $a)->output($a . PHP_EOL)
 
             ->assert('Wrapping scalar value : write value')
-            ->luaOutput('a=2;print(a);')->isEqualTo("2" . PHP_EOL)
+            ->lua('a=2;print(a);')->wrap('a', $a)->output("2" . PHP_EOL)
 
             ->assert('Wrapping scalar value : write value from var')
-            ->luaOutput('b=2;a=b;print(a);')->isEqualTo("2" . PHP_EOL)
+            ->lua('b=2;a=b;print(a);')->wrap('a', $a)->output("2" . PHP_EOL)
 
             ->assert('Return value is retrieved by PHP')
-            ->integer($this->execute('return 42;'))->isEqualTo(42)
-            ->integer($this->execute('c=43;return c;'))->isEqualTo(43)
-            ->integer($this->execute('c=44;return c+1;'))->isEqualTo(45)
-            ->array($this->execute('return 1,2;'))->isEqualTo(array(1, 2))
+            ->lua('return 42;')->returns(42)
+            ->lua('c=43;return c;')->returns(43)
+            ->lua('c=44;return c+1;')->returns(45)
+            ->lua('return 1,2;')->returns(array(1, 2))
 
             ->assert('Return a lua table as php array (beware of indexes)')
-            ->array($this->execute('return {1,2};'))->isEqualTo(array(1 =>1, 2 => 2))
+            ->lua('return {1,2};')->returns(array(1 =>1, 2 => 2))
 
             ->assert('Variable receiving a wrapper scalar is returned')
             ->if($b = 2)
-            ->and($env->wrap('b', $b))
-            ->integer($this->execute('c=b;return c;'))->isEqualTo(2)
+            ->lua('c=b;return c;')->wrap('b', $b)->lua(2)
 
 
             //->assert('Wrapping scarlar value : retrieve value')
@@ -67,8 +65,8 @@ class Interpreter extends Luatoum {
     public function testArrayHandling() {
         $this
             ->assert('Simple array creation')
-            ->lua('a={1,2};')
-            ->isParsed();
+            ->lua('a={1,2;3};')->isParsed()
+            ->lua('a={1,2;')->isNotParsed();
 
     }
 

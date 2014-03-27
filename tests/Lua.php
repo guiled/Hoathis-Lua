@@ -2,9 +2,29 @@
 
 namespace tests;
 
-use atoum\atoum\asserter;
+use atoum\asserter;
 
 class Lua extends asserter {
+
+    protected $ast;
+    protected $message;
+    protected $executed;
+    protected $output;
+    protected $return;
+    protected $env;
+    protected $code;
+
+    /**
+     *
+     * @var \Hoa\Compiler\Llk
+     */
+    protected $compiler;
+
+    /**
+     *
+     * @var \Hoathis\Lua\Visitor\Interpreter
+     */
+    protected $visitor;
 
     public function getVisitor() {
         if (!$this->visitor) {
@@ -24,17 +44,96 @@ class Lua extends asserter {
         return $this->compiler;
     }
 
-    public function isParsed($value) {
-        try {
-            $ast = $compiler->parse($input);
-            $this->pass();
-        } catch (\Hoa\Compiler\Exception $e) {
-            $this->fail('This code can not be parsed "' . $value . '".' . PHP_EOL . "Parser message : " . $e->getMessage());
+    protected function parse() {
+        if (!$this->ast) {
+            try {
+                $this->ast = $this->getCompiler()->parse($this->code);
+            } catch (\Hoa\Compiler\Exception $e) {
+                $this->message = 'This code can not be parsed "' . $this->code . '".' . PHP_EOL . "Parser message : " . $e->getMessage();
+            }
         }
     }
 
-    public function output($value) {
+    protected function execute() {
+        if (!$this->executed) {
+            $this->parse();
+            try {
+                ob_start();
+                $this->return = $this->getVisitor()->visit($this->ast);
+                $this->executed = true;
+                $this->output = ob_get_clean();
+            } catch (\Hoathis\Lua\Exception\Interpreter $e) {
+                $this->message = 'There is a problem during execution of "' . $value . '"' . PHP_EOL . "Visitor message : " . $e->getMessage();
+            }
+        }
+    }
 
+    public function setWith($value) {
+        parent::setWith($value);
+        $this->code = $value;
+        $this->ast = null;
+        $this->isExecuted = false;
+        $this->return = null;
+        $this->output = null;
+        $this->env = null;
+
+        return $this;
+    }
+
+    public function wrap($name, $value) {
+        if (!$this->env) {
+            $this->env = $this->getVisitor()->getRoot();
+        }
+        $this->env->wrap($name, $value);
+
+        return $this;
+    }
+
+    public function isParsed($failMessage = null) {
+        $this->parse();
+        if ($this->ast) {
+            $this->pass();
+        } else {
+            $this->fail($failMessage !== null ? $failMessage : sprintf('Lua Code "%s" can not be parsed', $this->code));
+        }
+
+        return $this;
+    }
+
+    public function isNotParsed($failMessage = null) {
+        $this->parse();
+        if (!$this->ast) {
+            $this->pass();
+        } else {
+            $this->fail($failMessage !== null ? $failMessage : sprintf('Lua Code "%s" can be parsed', $this->code));
+        }
+
+        return $this;
+    }
+
+    public function output($value, $failMessage = null) {
+        $this->execute();
+
+        if ($this->output === $value) {
+            $this->pass();
+        } else {
+            $this->fail($failMessage !== null ? $failMessage : sprintf('Lua Code "%s" does not output %s', $this->code, $value));
+        }
+
+        return $this;
+    }
+
+
+    public function returns($value, $failMessage = null) {
+        $this->execute();
+
+        if ($this->return === $value) {
+            $this->pass();
+        } else {
+            $this->fail($failMessage !== null ? $failMessage : sprintf('Lua Code "%s" does not return %s', $this->code, $value));
+        }
+
+        return $this;
     }
 
 }
