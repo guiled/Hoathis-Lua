@@ -68,11 +68,15 @@ class Lua extends asserter {
         }
     }
 
-    public function setWith($value) {
+    public function setWith($value = null) {
         parent::setWith($value);
-        $this->code = $value;
+        return $this->code($value);
+    }
+
+    public function code($code) {
+        $this->code = $code;
         $this->ast = null;
-        $this->isExecuted = false;
+        $this->executed = false;
         $this->return = null;
         $this->output = null;
         $this->env = null;
@@ -80,7 +84,7 @@ class Lua extends asserter {
         return $this;
     }
 
-    public function wrap($name, $value) {
+    public function wrap($name, &$value) {
         if (!$this->env) {
             $this->env = $this->getVisitor()->getRoot();
         }
@@ -117,7 +121,7 @@ class Lua extends asserter {
         if ($this->output === $value) {
             $this->pass();
         } else {
-            $this->fail($failMessage !== null ? $failMessage : sprintf('Lua Code "%s" does not output %s', $this->code, $value));
+            $this->fail($failMessage !== null ? $failMessage : sprintf('Lua Code "%s" does not output "%s" but "%s"', $this->code, $value, $this->output));
         }
 
         return $this;
@@ -132,6 +136,12 @@ class Lua extends asserter {
         } else {
             $this->fail($failMessage !== null ? $failMessage : sprintf('Lua Code "%s" does not return %s', $this->code, $value));
         }
+
+        return $this;
+    }
+
+    public function reset() {
+        $this->visitor = null;
 
         return $this;
     }
