@@ -33,9 +33,10 @@ class Interpreter extends Luatoum {
             ->if($a = 1)
             ->assert('Wrapping scalar value : read value')
             ->lua('print(a);')->wrap('a', $a)->output($a . PHP_EOL)
-                ->code('print(a);')->output($a . PHP_EOL)
+                ->code('print(a);a=a+1;')->output($a . PHP_EOL)
 
             ->assert('Wrapping scalar value : assign value')
+                ->code('print(a);')->output(($a+1) . PHP_EOL)
             ->lua('b=a;print(b);')->wrap('a', $a)->output($a . PHP_EOL)
 
             ->assert('Wrapping scalar value : write value')
@@ -68,8 +69,9 @@ class Interpreter extends Luatoum {
     public function testArrayHandling() {
         $this
             ->assert('Simple array creation')
-            ->lua('a={1,2;3};return a;')->isParsed()//->returns(array(1,2,3))
-            ->lua('a={1,2;')->isNotParsed();
+            ->lua('a={1,2;3};return a;')->isParsed()
+            ->returnsArray()->isEqualTo(array(1=>1,2=>2,3=>3))
+            ->code('return a;')->returnsArray();
 
     }
 

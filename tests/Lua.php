@@ -134,7 +134,7 @@ class Lua extends asserter {
         if ($this->return === $value) {
             $this->pass();
         } else {
-            $this->fail($failMessage !== null ? $failMessage : sprintf('Lua Code "%s" does not return %s', $this->code, $value));
+            $this->fail($failMessage !== null ? $failMessage : sprintf('Lua Code "%s" does not return "%s"', $this->code, $value));
         }
 
         return $this;
@@ -142,6 +142,23 @@ class Lua extends asserter {
 
     public function reset() {
         $this->visitor = null;
+
+        return $this;
+    }
+
+    public function assert($case = null) {
+        $this->generator->assert($case);
+
+        return $this;
+    }
+
+    public function returnsArray() {
+        $this->execute();
+        if (\is_array($this->return)) {
+            return $this->generator->array($this->return);
+        } else {
+            $this->fail('Lua Code "%s" does not return an array', $this->code);
+        }
 
         return $this;
     }
