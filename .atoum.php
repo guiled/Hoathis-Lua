@@ -7,8 +7,11 @@ if (defined('USE_COMPOSER') === false) {
 if (USE_COMPOSER) {
 	require_once __DIR__ . '/vendor/autoload.php';
 } else {
-	require_once __DIR__ . '/autoload.php';
+	require_once __DIR__ . '/Tests/Autoload.php';
 }
 
-$runner->addTestsFromDirectory(__DIR__ . DIRECTORY_SEPARATOR . 'Tests/Unit');
+$runner
+	->setBootstrapFile(__DIR__ . DIRECTORY_SEPARATOR . '.bootstrap.atoum.php')
+	->addTestsFromDirectory(__DIR__ . DIRECTORY_SEPARATOR . 'Tests/Unit')
+;
 $script->noCodeCoverageForNamespaces('mageekguy');
