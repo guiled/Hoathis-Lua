@@ -1,7 +1,7 @@
 <?php
-namespace tests\unit\Hoathis\Lua\Visitor;
+namespace Hoathis\Lua\Tests\Unit\Visitor;
 
-use \tests\unit\Luatoum;
+use Hoathis\Lua\Tests\Luatoum;
 
 class Interpreter extends Luatoum {
 
@@ -71,7 +71,7 @@ class Interpreter extends Luatoum {
             ->assert('Simple array creation')
             ->lua('a={1,2;3};return a;')->isParsed()
             ->returnsArray()->isEqualTo(array(1=>1,2=>2,3=>3))
-            ->code('return a;')->returnsArray();
+            ->code('return a;')->returnsArray()->isEqualTo(array(1=>1,2=>2,3=>3));
 
     }
 
