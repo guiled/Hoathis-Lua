@@ -31,4 +31,4 @@ class Lua extends atoum\test
 				->object($lua->getCompiler())->isIdenticalTo($compiler)
 		;
 	}
-} 
+}

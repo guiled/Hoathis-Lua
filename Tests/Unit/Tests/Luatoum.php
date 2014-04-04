@@ -31,4 +31,4 @@ class Luatoum extends atoum\test
 				->object($luatoum->code('return nil;'))->isIdenticalTo($lua)
 		;
 	}
-} 
+}
