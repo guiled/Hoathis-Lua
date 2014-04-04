@@ -146,12 +146,6 @@ class Lua extends asserter {
         return $this;
     }
 
-    public function assert($case = null) {
-        $this->generator->assert($case);
-
-        return $this;
-    }
-
     public function returnsArray() {
         $this->execute();
         if (\is_array($this->return)) {
