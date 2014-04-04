@@ -1,9 +1,8 @@
 <?php
 
-namespace tests\unit;
+namespace Hoathis\Lua\Tests;
 
 use atoum;
-use tests\Lua;
 
 require __DIR__ . '/Lua.php';
 

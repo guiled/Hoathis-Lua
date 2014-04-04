@@ -1,6 +1,6 @@
 <?php
 
-namespace tests;
+namespace Hoathis\Lua\Tests;
 
 use atoum\asserter;
 
