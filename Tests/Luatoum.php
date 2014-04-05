@@ -4,8 +4,6 @@ namespace Hoathis\Lua\Tests;
 
 use atoum;
 
-require __DIR__ . '/Lua.php';
-
 class Luatoum extends atoum\test
 {
     public function __construct()

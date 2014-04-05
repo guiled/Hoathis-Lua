@@ -1,0 +1,23 @@
+{
+    "name": "hoathis/lua",
+    "require-dev": {
+        "atoum/atoum": "dev-master"
+    },
+    "authors": [
+        {
+            "name": "guiled",
+            "email": "guislain.duthieuw@gmail.om"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "hoa/core": "*",
+        "hoa/visitor": "*",
+        "hoa/compiler": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Hoathis\\Lua\\": "."
+        }
+    }
+}

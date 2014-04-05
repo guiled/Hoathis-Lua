@@ -3,14 +3,8 @@ if ($argc < 2) {
     echo "Lua compiler through PHP\nUsage : php lua.php \"<lua code>\"\n";
     exit();
 }
-require '../../Hoa/Core/Core.php';
 
-from('Hoa')
--> import('File.Read')
--> import('Compiler.Llk.~');
-
-from('Hoathis')
--> import('Lua.Visitor.Interpreter');
+require_once __DIR__ . DIRECTORY_SEPARATOR . 'autoload.php';
 
 $compiler = \Hoa\Compiler\Llk::load(
     new \Hoa\File\Read('Grammar.pp')
