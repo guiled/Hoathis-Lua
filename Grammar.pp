@@ -68,6 +68,9 @@
 %token  until         until(?=\W)
 %token  while         while(?=\W)
 
+%token  string        (["'])(.*?)(?<!\\\\)\1
+%token  longstring    \[(=*)\[((?:.|\n)*?)\]\1\]
+
 // Operators.
 %token  plus          \+
 %token  minus         \-
@@ -104,7 +107,6 @@
 %token  point         \.
 
 // Values.
-%token  string        ("|')(.*?)(?<!\\\\)\1
 %token  number        [\-+]?(0|[1-9]\d*)(\.\d+)?([eE][\+\-]?\d+)?
 
 // Misc.
@@ -229,6 +231,7 @@ expression_term:
   | <false>
   | <true>
   | (::minus:: #negative | ::plus:: | ::pow:: #power)? <number>
+  | <longstring>
   | <string>
   | <tpoint>
   | variable_get()
@@ -264,6 +267,7 @@ table_access_function:
     ::parenthesis_:: expressions()? ::_parenthesis::
   | table_constructor()
   | <string>
+  | <longstring>
 
 function_definition:
     ::function:: function_body() #function_lambda

@@ -725,7 +725,11 @@ class Interpreter implements \Hoa\Visitor\Visit
                         return new \Hoathis\Lua\Model\Value($value);
 
                     case 'string':
-                        return new \Hoathis\Lua\Model\Value(trim($value, '\'"')); //@todo attention ca trim trop!
+                        $val = preg_replace('/([\'"])(.*?)\1/', '$2', $value);
+                        return new \Hoathis\Lua\Model\Value($val); //@todo attention ca trim trop!
+                    case 'longstring':
+                        $val = preg_replace('/\[(=*)\[((?:.|\n)*?)\]\1\]/', '$2', $value);
+                        return new \Hoathis\Lua\Model\Value($val); //@todo attention ca trim trop!
 
                     case 'nil':
                         return new \Hoathis\Lua\Model\Value(null);
