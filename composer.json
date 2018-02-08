@@ -1,7 +1,7 @@
 {
-    "name": "hoathis/lua",
+    "name": "guiled/lua",
     "require-dev": {
-        "atoum/atoum": "dev-master"
+        "atoum/stubs": "*"
     },
     "authors": [
         {
@@ -11,13 +11,12 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "hoa/core": "*",
         "hoa/visitor": "*",
-        "hoa/compiler": "*"
+        "hoa/compiler": "^3.0@dev"
     },
     "autoload": {
         "psr-4": {
-            "Hoathis\\Lua\\": "."
+            "Hoathis\\Lua\\": "src"
         }
     }
 }

@@ -72,8 +72,8 @@
 %token  plus          \+
 %token  minus         \-
 %token  times         \*
-%token  div           /
 %token  idiv          //
+%token  div           /
 %token  modulo        %
 %token  pow           \^
 %token  band          &
