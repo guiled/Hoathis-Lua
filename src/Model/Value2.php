@@ -12,7 +12,7 @@ namespace Hoathis\Lua\Model;
  *
  * @author houra
  */
-abstract class Value
+abstract class Value2
 {
     /**
      *

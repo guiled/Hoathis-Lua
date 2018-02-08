@@ -1,14 +1,8 @@
 <?php
 
-require __DIR__ . '/../../../Hoa/Core/Core.php';
+require 'autoload.php';
 
-from('Hoa')
-        ->import('File.Read')
-        ->import('Compiler.Llk.~')
-        ->import('Compiler.Visitor.Dump');
 
-from('Hoathis')
-        ->import('Lua.Visitor.Interpreter');
 $compiler = \Hoa\Compiler\Llk::load(
                 new \Hoa\File\Read('hoa://Library/Lua/Grammar.pp')
 );
@@ -26,7 +20,18 @@ $tests = [
     ],
     [
         'desc' => 'Return dans un IF',
-        'code' => 'function a(x) if (x % 2 == 0) then return \'pair\' else return \'impair\' end end;print(a(2));print(a(3));',
+        'code' => <<<LUA
+function a(x)
+    if (x % 2 == 0) then
+        return 'pair'
+    else
+        return 'impair'
+    end
+end;
+print(a(2));
+print(a(3));
+LUA
+,
         'output' => "pair\nimpair\n"
     ],
     [
@@ -149,10 +154,10 @@ foreach ($tests as $test) {
     if ($output !== $test['output']) {
         echo 'FAILED for ', $test['desc'], PHP_EOL;
         echo 'Tested code :', $test['code'], PHP_EOL;
-        echo 'FAILED for ', $test['desc'], PHP_EOL;
-        echo 'Tested code :', $test['code'], PHP_EOL;
         echo 'Output : <', $output, '>', md5($output), PHP_EOL;
         echo 'Awaited output : <', $test['output'], '>', md5($test['output']), PHP_EOL;
+        $dump = new Hoa\Compiler\Visitor\Dump();
+        echo $dump->visit($ast);
     } else {
         echo 'SUCCESS for ', $test['desc'], PHP_EOL;
     }

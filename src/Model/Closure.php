@@ -48,20 +48,22 @@ class Closure extends Environment {
         $interpreter->setRoot($this);
     	if ($this->getBody() instanceof \Hoa\Compiler\Llk\TreeNode) {
 
-			foreach($this->_parameters as $paramname => $parameter) {
+            foreach($this->_parameters as $paramname => $parameter) {
                 if ($paramname === '...') {
                     $value = new ValueGroup(null);
-                    while (list($k,$argument) = each($arguments)) {
+                    while ($argument = current($arguments)) {
                         $value->addValue($argument);
+                        next($arguments);
                     }
                     $parameter->setValue($value);
                 } else {
-                    $argument_parts = each($arguments);
+                    $argument_parts = current($arguments);
+                    next($arguments);
 
                     if (false === $argument_parts) {
                         $parameter->setValue(new Value(null));
                     } else {
-                        $parameter->setValue($argument_parts[1]);
+                        $parameter->setValue($argument_parts);
                     }
                 }
 			}
