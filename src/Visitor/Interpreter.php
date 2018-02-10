@@ -36,6 +36,7 @@ class Interpreter implements \Hoa\Visitor\Visit
         $this->visitors['#addition'] = (new Node\Arithmetic\Addition())->setInterpreter($this);
         $this->visitors['#substraction'] = (new Node\Arithmetic\Substraction())->setInterpreter($this);
         $this->visitors['#onlyfirst'] = (new Node\OnlyFirst())->setInterpreter($this);
+        $this->visitors['#comparison'] = (new Node\Comparison())->setInterpreter($this);
 
         $this->environment = new \Hoathis\Lua\Model\Environment();
         $basic = new \Hoathis\Lua\Library\Basic();
@@ -239,7 +240,7 @@ class Interpreter implements \Hoa\Visitor\Visit
 
                 return new \Hoathis\Lua\Model\Value($child0->getValue() . $child1->getValue());
 
-            case '#comparison':
+            /*case '#comparison':
                 $val1       = $children[0]->accept($this, $handle, self::AS_VALUE);
                 $comparison = $children[1]->getValueToken();
                 $val2       = $children[2]->accept($this, $handle, self::AS_VALUE);
@@ -276,7 +277,7 @@ class Interpreter implements \Hoa\Visitor\Visit
 
                         break;
                 }
-                break;
+                break;*/
 
             case '#local_function':
                 $local_function = true;
