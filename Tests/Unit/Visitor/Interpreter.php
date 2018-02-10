@@ -22,15 +22,44 @@ class Interpreter extends Luatoum {
             ->assert('Declaration of a symbol')
             ->lua('a=true')->isParsed->hasVariable('a')
             ->Boolean($this->lua->getVariable('a'))->isTrue
-            ->lua('a=true;b=true')->hasVariable('a')->hasVariable('b')->hasNotVariable('c')
+            ->assert('New environment')
+            ->lua('b=true')->hasNotVariable('a')->hasVariable('b')->hasNotVariable('c')
                 ->code('a.=2')->isNotParsed
                 ->code('local _b=2')->isParsed //@todo tester l'exécution du code
-        ;        
+        ;
     }
 
     public function identifierGenerator()
     {
-        $data = $this->realdom->regex('#[_a-zA-Z]\w*#');
+        $data = $this->realdom->newDisjunction();
+        $regex = new \Hoa\Realdom\Regex('#[_a-zA-Z]\w*#');
+        $keywords = [
+            'and',
+            'break',
+            'do',
+            'elseif',
+            'else',
+            'end',
+            'false',
+            'for',
+            'function',
+            'goto',
+            'if',
+            'in',
+            'local',
+            'nil',
+            'not',
+            'or',
+            'repeat',
+            'return',
+            'then',
+            'true',
+            'until',
+            'while'];
+        // prevent to generate a reserved word
+        array_walk($keywords, [$regex, 'discredit']);
+        $data[] = $regex;
+        //$data = $this->realdom->regex('#[_a-zA-Z]\w*#');
         return $this->sampleMany($data, 20);
     }
 
@@ -49,15 +78,17 @@ class Interpreter extends Luatoum {
         ;
     }
 
-    public function testPrint() {
+    public function testPrint()
+    {
         $this
             ->assert('Test if print sends to output')
             ->lua('print(41);')->outputLF('41')
-                ->code('a=42;print(a);')->outputLF("42")->hasVariable('a')
+            ->code('a=42;print(a);')->outputLF("42")->hasVariable('a')
         ;
     }
 
-    public function testArithmetic() {
+    public function testArithmetic()
+    {
         $this
             ->assert('Addition')
             ->lua('print(1+2)')->outputLF("3")
@@ -70,7 +101,8 @@ class Interpreter extends Luatoum {
             ->code('a=2;print(4-1+a);')->dumpAST->outputLF('5')
             ->code('a=2;print(4-(1+a));')->dumpAST->outputLF('1')
 
-//            ->assert('Test division multiplication parenthesis')
+            ->assert('Test division multiplication parenthesis')
+            ->lua('print(2*3);')->outputLF("6")
 //            ->lua('print((4/2)*3);')->outputLF("6")
 
 //            ->assert('Test left assignation of basic operators')
@@ -78,10 +110,13 @@ class Interpreter extends Luatoum {
             ;
     }
 
-    /*public function testComparison()
+    public function testComparison()
     {
-        
-    }*/
+        $this
+            ->assert('Compare the global environment _G and _ENV')
+            ->lua('print(_G==_ENV)')->outputLF('true')
+        ;
+    }
 /*
     public function testPhpLuaIntegration() {
         $this
