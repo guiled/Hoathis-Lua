@@ -6,6 +6,7 @@ use atoum;
 
 class Luatoum extends atoum\test
 {
+    protected $lua;
 
     public function __construct()
     {
@@ -13,12 +14,11 @@ class Luatoum extends atoum\test
 
         $generator = $this->getAsserterGenerator();
         $factory   = function() use ($generator) {
-            static $lua;
-            if (null === $lua) {
-                $lua = new Lua($generator);
+            if (null === $this->lua) {
+                $this->lua = new Lua($generator);
             }
 
-            return $lua;
+            return $this->lua;
         };
 
         $this->getAssertionManager()
@@ -34,5 +34,13 @@ class Luatoum extends atoum\test
 				return $factory()->code($code);
             })*/
         ;
+    }
+
+    public function startCase($case)
+    {
+        if (null !== $this->lua) {
+            $this->lua->reset();
+        }
+        return parent::startCase($case);
     }
 }

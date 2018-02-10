@@ -34,4 +34,27 @@ class Luatoum extends atoum\test
                 //->object($luatoum->code('return nil;'))->isIdenticalTo($lua)
         ;
     }
+
+    public function testResetEnvironment()
+    {
+        $this
+            ->given($this->newTestedInstance)
+            ->if($lua = $this->testedInstance->lua(''))
+            ->then
+                ->object($env = $lua->getVisitor()->getEnvironment())
+                ->isInstanceOf('\Hoathis\Lua\Model\Environment')
+            
+            ->if($this->testedInstance->lua('--'))
+            ->then
+                ->object($lua->getVisitor()->getEnvironment())
+                ->isIdenticalTo($env)
+
+            ->given($this->testedInstance->startCase($this->testedInstance))
+            ->if($this->testedInstance->lua(''))
+            ->then
+                ->object($lua->getVisitor()->getEnvironment())
+                ->isInstanceOf('\Hoathis\Lua\Model\Environment')
+                ->isNotIdenticalTo($env)
+        ;
+    }
 }
