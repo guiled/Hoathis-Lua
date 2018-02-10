@@ -1,6 +1,6 @@
 <?php
 
-require 'autoload.php';
+require __DIR__ . '/autoload.php';
 
 
 $compiler = \Hoa\Compiler\Llk::load(
@@ -8,6 +8,30 @@ $compiler = \Hoa\Compiler\Llk::load(
 );
 
 $tests = [
+    [
+        'desc' => 'Assign int',
+        'code' => <<<lua
+a=1;print(a);
+lua
+        ,'onlyAST' => false,
+        'output' => "1\n"
+    ],
+    [
+        'desc' => 'String declaration',
+        'code' => <<<lua
+print("double quote string (dqs)")
+print('single quote string (sqs)')
+print([[long bracket string]])
+print([[long bracket
+multiline string]])
+--print([=[long bracket level 1 string]=])
+--print("quote in 'dqs' is ok")
+--print('double quote in "sqs"')
+lua
+        ,
+        'onlyAST' => false,
+        'output' => "double quote string (dqs)\nsingle quote string (sqs)\nlong bracket string\nlong bracket\nmultiline string\n"//long bracket level 1 string\n"
+    ],
     [
         'desc' => 'Acces aux tableaux',
         'code' => "a={b={c=1}};a.b.c=3;print(a.b.c);a={b={c={d=1}}};a.b.c.d=3;print(a['b'].c['d']);print(a.b.c.d);",
@@ -99,9 +123,20 @@ LUA
         'code' => 'r=function () return {a=1,b=r}; end;a={b=r};print(a.b().a)',
         'output' => "1\n"
     ],
+    [
+        'desc' => '',
+        'code' => 'dummy = a.b().c().d',
+        'onlyAST' => true
+    ],
+    [
+        'desc' => '',
+        'code' => 'dummy = a[b()].c().d',
+        'onlyAST' => true
+    ]
 //    [ // This test fails because of cyclic recursion problem- 20140323
 //        'desc' => 'Function that returns an array containing a function...',
-//        'code' => 'r=function () return {a=1,b=r}; end;a={b=r};print(a.b().b().a)',
+//        'code' => 'r=function () return {a=1,b=r}; end;a={b=r};print(a.b().c().d)',
+//        'onlyAST' => true,
 //        'desc' => 'Function that returns an array containing a function...',
 //        'code' => 'r=function () return {a=1,b=r}; end;a={b=r};print(a.b().b().a)',
 //        'output' => "1\n"
@@ -136,14 +171,19 @@ function: 01A30EA0
      * function a() return 1,2 end;function b() return 3,4,a(); end;print(b(),1); --> should display 3  1
      */
 ];
+$dump = new Hoa\Compiler\Visitor\Dump();
 
 foreach ($tests as $test) {
     $visitor = new \Hoathis\Lua\Visitor\Interpreter();
     try {
         $ast = $compiler->parse($test['code']);
         ob_start();
-        $visitor->visit($ast);
-        $output = str_replace("\r", '', ob_get_clean());
+        if (!empty($test['onlyAST'])) {
+            $output = $dump->visit($ast);
+        } else {
+            $visitor->visit($ast);
+            $output = str_replace("\r", '', ob_get_clean());
+        }
     } catch (Exception $ex) {
         if (false === empty($test['exception'])) {
             $output = $test['output'] = 'ok';
@@ -151,12 +191,13 @@ foreach ($tests as $test) {
             $output = $ex;
         }
     }
-    if ($output !== $test['output']) {
+    if (!empty($test['onlyAST'])) {
+        echo $output;
+    } elseif ($output !== $test['output']) {
         echo 'FAILED for ', $test['desc'], PHP_EOL;
         echo 'Tested code :', $test['code'], PHP_EOL;
         echo 'Output : <', $output, '>', md5($output), PHP_EOL;
         echo 'Awaited output : <', $test['output'], '>', md5($test['output']), PHP_EOL;
-        $dump = new Hoa\Compiler\Visitor\Dump();
         echo $dump->visit($ast);
     } else {
         echo 'SUCCESS for ', $test['desc'], PHP_EOL;

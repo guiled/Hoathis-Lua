@@ -1,7 +1,8 @@
 {
     "name": "guiled/lua",
     "require-dev": {
-        "atoum/stubs": "*"
+        "atoum/stubs": "*",
+        "atoum/praspel-extension": "dev-master"
     },
     "authors": [
         {
@@ -16,7 +17,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Hoathis\\Lua\\": "src"
+            "Hoathis\\Lua\\": "src",
+            "Hoathis\\Lua\\Tests\\": "Tests"
         }
     }
 }

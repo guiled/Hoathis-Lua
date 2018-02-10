@@ -10,9 +10,14 @@ namespace Hoathis\Lua\Model\Value;
 /**
  * Description of LuaFunction
  *
- * @author houra
+ * @author Guislain Duthieuw
  */
-class LuaFunction
+class Closure extends \Hoathis\Lua\Model\Value
 {
     const TYPE = 'function';
+
+    public function call($arguments)
+    {
+        return call_user_func_array($this->content, $arguments);
+    }
 }

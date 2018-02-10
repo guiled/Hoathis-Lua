@@ -14,4 +14,6 @@ $runner
 	->setBootstrapFile(__DIR__ . DIRECTORY_SEPARATOR . '.bootstrap.atoum.php')
 	->addTestsFromDirectory(__DIR__ . DIRECTORY_SEPARATOR . 'Tests/Unit')
 ;
+$runner->addExtension(new \Atoum\PraspelExtension\Manifest());
+
 $script->noCodeCoverageForNamespaces('mageekguy');

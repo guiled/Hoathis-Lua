@@ -5,29 +5,67 @@ use Hoathis\Lua\Tests\Luatoum;
 
 class Interpreter extends Luatoum {
 
+    public function testDeclaration()
+    {
+        $this
+            ->assert('Declaration of a symbol')
+            ->lua('a=true')->isParsed->hasVariable('a')
+            ->lua('a=true;b=true')->hasVariable('a')->hasVariable('b')->hasNotVariable('c')
+                ->code('a.=2')->isNotParsed
+                ->code('local _b=2')->isParsed //@todo tester l'exécution du code
+        ;        
+    }
+
+    public function identifierGenerator()
+    {
+        $data = $this->realdom->regex('#[_a-zA-Z]\w*#');
+        return $this->sampleMany($data, 20);
+    }
+
+
+    /**
+     * @dataProvider identifierGenerator
+     * @param String $identifier
+     */
+    public function testDeclarationIdentifier($identifier)
+    {
+        $this
+            ->assert('Declaration of a symbol')
+            ->given($value = mt_rand(0, 3000))
+            ->lua($identifier . '='.$value)->hasVariable($identifier)
+            ->integer($this->lua->getVariable($identifier))->isEqualTo($value)
+        ;
+    }
+
     public function testPrint() {
         $this
-            ->assert('Test if print send to output')
-            ->lua('print(41);')->output('41' . PHP_EOL)
-                ->code('print(42);')->output("42" . PHP_EOL)
-                ->code('print(43);')->output("43" . PHP_EOL);
+            ->assert('Test if print sends to output')
+            ->lua('print(41);')->outputLF('41')
+                ->code('a=42;print(a);')->outputLF("42")->hasVariable('a')
+        ;
     }
 
     public function testArithmetic() {
         $this
             ->assert('Addition')
-            ->lua('print(1+2);')->output("3" . PHP_EOL)
+            ->lua('print(1+2)')->outputLF("3")
 
-            ->lua('a=3;b=4;print(a+b);')->output("7" . PHP_EOL)
+            ->lua('a=3;b=4;print(a+b);')->outputLF("7")
 
-            ->assert('Test division multiplication parenthesis')
-            ->lua('print((4/2)*3);')->output("6" . PHP_EOL)
+            ->assert('Substraction')
+            ->lua('print(100-58)')->outputLF('42')
+            ->code('a=3;print(4-1-a);')->outputLF('0')
+            ->code('a=2;print(4-1+a);')->dumpAST->outputLF('5')
+            ->code('a=2;print(4-(1+a));')->dumpAST->outputLF('5')
+
+//            ->assert('Test division multiplication parenthesis')
+//            ->lua('print((4/2)*3);')->outputLF("6")
 
 //            ->assert('Test left assignation of basic operators')
 //            ->luaOutput('print(4/2*3);')->isEqualTo("6" . PHP_EOL)
             ;
     }
-
+/*
     public function testPhpLuaIntegration() {
         $this
             ->if($a = 1)
@@ -74,6 +112,6 @@ class Interpreter extends Luatoum {
             ->code('return a;')->returnsArray()->isEqualTo(array(1=>1,2=>2,3=>3));
 
     }
-
+*/
 
 }

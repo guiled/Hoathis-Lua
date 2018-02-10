@@ -51,7 +51,7 @@
 %token  elseif        elseif(?=\W)
 %token  else          else(?=\W)
 %token  end           end(?=\W)
-%token  false         false(?=\W)
+%token  false         false(?=\W|$)
 %token  for           for(?=\W)
 %token  function      function(?=\W)
 %token  goto          goto(?=\W)
@@ -64,7 +64,7 @@
 %token  repeat        repeat(?=\W)
 %token  return        return(?=\W)
 %token  then          then(?=\W)
-%token  true          true(?=\W)
+%token  true          true(?=\W|$)
 %token  until         until(?=\W)
 %token  while         while(?=\W)
 
@@ -112,7 +112,7 @@
 // Misc.
 
 // Identifier.
-%token  identifier    [\w_]([\w\d_]+)?
+%token  identifier    [a-zA-Z_]([\w\d_]+)?
 
 
 chunk:

@@ -10,9 +10,9 @@ namespace Hoathis\Lua\Model\Value;
 /**
  * Description of Nil
  *
- * @author houra
+ * @author Guislain Duthieuw
  */
-class Nil extends Value
+class Nil extends \Hoathis\Lua\Model\Value
 {
     const TYPE='nil';
 }

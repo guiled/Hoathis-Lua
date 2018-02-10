@@ -2,6 +2,7 @@
 
 namespace Hoathis\Lua\Visitor;
 
+use Hoathis\Lua\Model\Value;
 /**
  * Class \Hoathis\Lua\Visitor\Interpreter.
  *
@@ -16,18 +17,46 @@ class Interpreter implements \Hoa\Visitor\Visit
     const AS_SYMBOL = 0;
     const AS_VALUE  = 1;
 
-    protected $_environment = null;
+    protected $environment;
+
+    /**
+     *
+     * @var \Hoa\Visitor\Visit[]
+     */
+    protected $visitors = [];
 
     public function __construct()
     {
 
-        $this->_environment = new \Hoathis\Lua\Model\Environment('_G');
-        $this->_environment->setFunction('print', array($this, 'stdPrint'));
-        $this->_environment->setFunction('ipairs', array($this, 'stdIpairs'));
-        $this->_environment->setFunction('next', array($this, 'stdNext'));
-        $this->_environment->setFunction('pairs', array($this, 'stdPairs'));
+        $this->visitors['token'] = (new Node\Token())->setInterpreter($this);
+        $this->visitors['#assignation'] = (new Node\Assignation())->setInterpreter($this);
+        $this->visitors['#block'] = (new Node\Block())->setInterpreter($this);
+        $this->visitors['#function_call'] = (new Node\FunctionCall())->setInterpreter($this);
+        $this->visitors['#arguments'] = (new Node\Arguments())->setInterpreter($this);
+        $this->visitors['#addition'] = (new Node\Arithmetic\Addition())->setInterpreter($this);
+        $this->visitors['#substraction'] = (new Node\Arithmetic\Substraction())->setInterpreter($this);
+
+        $this->environment = new \Hoathis\Lua\Model\Environment();
+        $basic = new \Hoathis\Lua\Library\Basic();
+        $this->environment->set('print', new Value\Closure(array($basic, 'stdPrint')));
+        //$this->environment->setFunction('ipairs', array($this, 'stdIpairs'));
+        //$this->environment->setFunction('next', array($this, 'stdNext'));
+        //$this->environment->setFunction('pairs', array($this, 'stdPairs'));
 
         return;
+    }
+
+    /**
+     *
+     * @param String $type
+     * @return \Hoa\Visitor\Visit
+     */
+    public function getNodeVisitor($type)
+    {
+        if (isset($this->visitors[$type])) {
+            return $this->visitors[$type];
+        }
+        throw new \Hoathis\Lua\Exception\UnknownNode('Node of type \'' . $type . '\' is not implemented');
     }
 
     /**
@@ -43,18 +72,22 @@ class Interpreter implements \Hoa\Visitor\Visit
     {
 
         $type     = $element->getId();
+
+        $node = $this->getNodeVisitor($type);
+        return $node->visit($element, $handle, $eldnah);
+
         $children = $element->getChildren();
 
         switch ($type) {
 
             case '#do_block':
-                $oldEnvironment = $this->_environment;
+                $oldEnvironment = $this->environment;
                 $data           = $element->getData();
                 if (false === isset($data['env'])) {
-                    $data['env'] = new \Hoathis\Lua\Model\Environment('block', $this->_environment);
+                    $data['env'] = new \Hoathis\Lua\Model\Environment('block', $this->environment);
                 }
-                $this->_environment = $data['env'];
-            case '#block':
+                $this->environment = $data['env'];
+            /*case '#block':
                 $nbchildren         = count($children);
                 for ($i = 0; $i < $nbchildren; $i++) {
                     $val = $children[$i]->accept($this, $handle, $eldnah);
@@ -78,13 +111,13 @@ class Interpreter implements \Hoa\Visitor\Visit
                     }
                 }
                 if (true === isset($oldEnvironment)) {
-                    $this->_environment = $oldEnvironment;
+                    $this->environment = $oldEnvironment;
                 }
                 if (true === isset($returnedValue)) {
                     return $returnedValue;
                 }
                 break;
-
+            */
             case '#chunk':
             case '#function_body':
                 foreach ($children as $child) {
@@ -101,7 +134,7 @@ class Interpreter implements \Hoa\Visitor\Visit
 
             case '#assignation_local':
                 $assignation_local = true;
-            case '#assignation':
+            /*case '#assignation':
                 if (false === isset($assignation_local)) {
                     $assignation_local = false;
                 }
@@ -119,7 +152,7 @@ class Interpreter implements \Hoa\Visitor\Visit
                     $values = array($rightVar);
                 }
                 $this->setValueGroupToValueGroup($symbols, $values, $assignation_local);
-                break;
+                break;*/
 
             case '#expression_group':
                 $group = new \Hoathis\Lua\Model\ValueGroup(null);
@@ -149,7 +182,7 @@ class Interpreter implements \Hoa\Visitor\Visit
                 }
                 break;
 
-            case '#addition':
+            /*case '#addition':
                 $parent = $element->getParent();
                 $child0 = $children[0]->accept($this, $handle, self::AS_VALUE);
                 $child1 = $children[1]->accept($this, $handle, self::AS_VALUE);
@@ -158,7 +191,7 @@ class Interpreter implements \Hoa\Visitor\Visit
                     return new \Hoathis\Lua\Model\Value($child0->getValue() - $child1->getValue());
                 }
 
-                return new \Hoathis\Lua\Model\Value($child0->getValue() + $child1->getValue());
+                return new \Hoathis\Lua\Model\Value($child0->getValue() + $child1->getValue());*/
             case '#substraction':
                 $parent = $element->getParent();
                 $child0 = $children[0]->accept($this, $handle, self::AS_VALUE);
@@ -171,7 +204,7 @@ class Interpreter implements \Hoa\Visitor\Visit
                 return new \Hoathis\Lua\Model\Value($child0->getValue() - $child1->getValue());
 
             case '#power':
-                //print_r($this->_environment->_symbols);
+                //print_r($this->environment->_symbols);
                 $child0 = $children[0]->accept($this, $handle, self::AS_VALUE);
                 $child1 = $children[1]->accept($this, $handle, self::AS_VALUE);
                 return new \Hoathis\Lua\Model\Value(pow($child0->getValue(), $child1->getValue()));
@@ -271,7 +304,7 @@ class Interpreter implements \Hoa\Visitor\Visit
                     $closuresymbol = $symbol;
                 }
                 $closure = new \Hoathis\Lua\Model\Closure(
-                    $closuresymbol, $this->_environment, $parameters, $body
+                    $closuresymbol, $this->environment, $parameters, $body
                 );
                 if (true === isset($symbol)) {         // it's a function declaration with the symbol
                     if ($symbol instanceof \Hoathis\Lua\Model\Value) {          // symbol is an array that must receive a closure
@@ -279,13 +312,13 @@ class Interpreter implements \Hoa\Visitor\Visit
                         return $symbol;
                     } else {
                         if (isset($local_function)) {
-                            $this->_environment->localSet($symbol,
-                                new \Hoathis\Lua\Model\Variable($symbol, $this->_environment));
+                            $this->environment->localSet($symbol,
+                                new \Hoathis\Lua\Model\Variable($symbol, $this->environment));
                         } else {
-                            $this->_environment[$symbol] = new \Hoathis\Lua\Model\Variable($symbol, $this->_environment);
+                            $this->environment[$symbol] = new \Hoathis\Lua\Model\Variable($symbol, $this->environment);
                         }
-                        $this->_environment[$symbol]->setValue(new \Hoathis\Lua\Model\Value($closure));
-                        return $this->_environment[$symbol];
+                        $this->environment[$symbol]->setValue(new \Hoathis\Lua\Model\Value($closure));
+                        return $this->environment[$symbol];
                     }
                 } else {                // it's a lambda function
                     return new \Hoathis\Lua\Model\Value($closure); //, \Hoathis\Lua\Model\Value::REFERENCE);
@@ -304,7 +337,7 @@ class Interpreter implements \Hoa\Visitor\Visit
                 $parameters[] = '...';
                 return $parameters;
 
-            case '#function_call':
+            /*case '#function_call':
                 $selfFunction = ($children[0]->getId() === '#table_access_self');
                 $symbol       = $children[0]->accept($this, $handle, self::AS_SYMBOL);
                 if (true === isset($children[1])) {
@@ -332,27 +365,27 @@ class Interpreter implements \Hoa\Visitor\Visit
                         return call_user_func_array($symbol, $argValues);
                     }
 
-                    if (false === isset($this->_environment[$symbol])) {
+                    if (false === isset($this->environment[$symbol])) {
                         throw new \Hoathis\Lua\Exception\Interpreter(
                         'Unknown symbol %s()', 42, $symbol);
                     }
-                    $closure = $this->_environment[$symbol]->getValue()->getValue();
+                    $closure = $this->environment[$symbol]->getValue()->getValue();
                     if (!($closure instanceof \Hoathis\Lua\Model\Closure)) {
                         throw new \Hoathis\Lua\Exception\Interpreter(
                         'Symbol %s() is not a function.', 42, $symbol);
                     }
                 }
 
-                $oldEnvironment = $this->_environment;
-                //$this->_environment = $closure;
+                $oldEnvironment = $this->environment;
+                //$this->environment = $closure;
                 if (true === $selfFunction) {           // a function called with colon in a table receives a hidden parameter called self (the function container)
                     array_unshift($arguments, $symbol->getContainer());
                 }
                 $out = $closure->call($arguments, $this);
-                //$this->_environment = $oldEnvironment;
+                //$this->environment = $oldEnvironment;
 
-                return $out;
-
+                return $out;*/
+                
             case '#return':
                 if (false === empty($children)) {
                     $val = $children[0]->accept($this, $handle, self::AS_VALUE);
@@ -360,7 +393,7 @@ class Interpreter implements \Hoa\Visitor\Visit
                 }
                 break;
 
-            case '#arguments':
+            /*case '#arguments':
                 if (false === empty($children)) {
                     $children[0] = $children[0]->accept($this, $handle, self::AS_VALUE);
                     if ($children[0] instanceof \Hoathis\Lua\Model\ValueGroup) {
@@ -368,7 +401,7 @@ class Interpreter implements \Hoa\Visitor\Visit
                     }
                 }
 
-                return $children;
+                return $children;*/
 
             case '#parameters':
                 foreach ($children as &$child) {
@@ -528,15 +561,15 @@ class Interpreter implements \Hoa\Visitor\Visit
                 while (false === $ifDone) {
                     $conditions = $children[$conditionPos]->accept($this, $handle, self::AS_VALUE);
                     if (true === self::valueAsBool($conditions->getValue())) {
-                        $oldEnvironment = $this->_environment;
+                        $oldEnvironment = $this->environment;
                         $data           = $element->getData();
                         if (false === isset($data['env'])) {
-                            $data['env'] = new \Hoathis\Lua\Model\Environment('block', $this->_environment);
+                            $data['env'] = new \Hoathis\Lua\Model\Environment('block', $this->environment);
                         }
-                        $this->_environment = $data['env'];
+                        $this->environment = $data['env'];
                         $val                = $children[$conditionPos + 1]->accept($this, $handle, $eldnah);
                         if ($val instanceof \Hoathis\Lua\Model\ReturnedValue || $val instanceof \Hoathis\Lua\Model\BreakStatement) {
-                            $this->_environment = $oldEnvironment;
+                            $this->environment = $oldEnvironment;
                             return $val;
                         }
                         $ifDone = true;
@@ -545,15 +578,15 @@ class Interpreter implements \Hoa\Visitor\Visit
                         if ('elseif' === $children[$conditionPos + 2]->getValueToken()) {
                             $conditionPos = $conditionPos + 3;  // condition of elseif
                         } else {            // the else statement
-                            $oldEnvironment = $this->_environment;
+                            $oldEnvironment = $this->environment;
                             $data           = $element->getData();
                             if (false === isset($data['env'])) {
-                                $data['env'] = new \Hoathis\Lua\Model\Environment('block', $this->_environment);
+                                $data['env'] = new \Hoathis\Lua\Model\Environment('block', $this->environment);
                             }
-                            $this->_environment = $data['env'];
+                            $this->environment = $data['env'];
                             $val                = $children[$conditionPos + 3]->accept($this, $handle, $eldnah);
                             if ($val instanceof \Hoathis\Lua\Model\ReturnedValue || $val instanceof \Hoathis\Lua\Model\BreakStatement) {
-                                $this->_environment = $oldEnvironment;
+                                $this->environment = $oldEnvironment;
                                 return $val;
                             }
                             $ifDone = true;
@@ -563,7 +596,7 @@ class Interpreter implements \Hoa\Visitor\Visit
                     }
                 }
                 if (true === isset($oldEnvironment)) {
-                    $this->_environment = $oldEnvironment;
+                    $this->environment = $oldEnvironment;
                 }
                 break;
 
@@ -572,10 +605,10 @@ class Interpreter implements \Hoa\Visitor\Visit
                 $nbchildren = count($children);
 
                 // store current environment and initiate loop environment
-                $oldEnvironment = $this->_environment;
+                $oldEnvironment = $this->environment;
                 $data           = $element->getData();
                 if (false === isset($data['env'])) {
-                    $data['env'] = new \Hoathis\Lua\Model\Environment('block', $this->_environment);
+                    $data['env'] = new \Hoathis\Lua\Model\Environment('block', $this->environment);
                 }
 
                 if ('#while_loop' === $type) {
@@ -583,7 +616,7 @@ class Interpreter implements \Hoa\Visitor\Visit
                     $conditionPos         = 0;                      // in while_loop condition is at the beginning
                     $firstStmt            = 1;
                     $lastStmt             = $nbchildren - 1;
-                    $conditionEnvironment = $this->_environment;        // while condition is evaluated with parent environment
+                    $conditionEnvironment = $this->environment;        // while condition is evaluated with parent environment
                     $condition            = $children[$conditionPos]->accept($this, $handle, $eldnah);
                 } else {
                     $condChanger          = true;                    // used to invert the loop end condition
@@ -594,29 +627,29 @@ class Interpreter implements \Hoa\Visitor\Visit
                     $condition            = new \Hoathis\Lua\Model\Value(false); // simulate first condition to iterate at least once with "repeat" loop
                 }
                 $val                = null;
-                $this->_environment = $data['env'];
+                $this->environment = $data['env'];
                 while (($condChanger xor true === self::valueAsBool($condition->getValue())) && !($val instanceof \Hoathis\Lua\Model\BreakStatement)) {      // break stop the loop
                     for ($i = $firstStmt; $i <= $lastStmt && !($val instanceof \Hoathis\Lua\Model\BreakStatement); $i++) {
                         $val = $children[$i]->accept($this, $handle, $eldnah);
                         if ($val instanceof \Hoathis\Lua\Model\ReturnedValue) {
-                            $this->_environment = $oldEnvironment;
+                            $this->environment = $oldEnvironment;
                             return $val;            // there is a return in the while
                         }
                     }
-                    $this->_environment = $conditionEnvironment;        // condition must be evaluated in a specific environment
+                    $this->environment = $conditionEnvironment;        // condition must be evaluated in a specific environment
                     $condition          = $children[$conditionPos]->accept($this, $handle, $eldnah);
-                    $this->_environment = $data['env'];
+                    $this->environment = $data['env'];
                 }
-                $this->_environment = $oldEnvironment;
+                $this->environment = $oldEnvironment;
                 break;
 
             case '#for_loop':
-                $oldEnvironment = $this->_environment;
+                $oldEnvironment = $this->environment;
                 $data           = $element->getData();
                 if (false === isset($data['env'])) {
-                    $data['env'] = new \Hoathis\Lua\Model\Environment('block', $this->_environment);
+                    $data['env'] = new \Hoathis\Lua\Model\Environment('block', $this->environment);
                 }
-                $this->_environment = $data['env'];
+                $this->environment = $data['env'];
                 $nbchildren         = count($children);
                 $varName            = $children[0]->accept($this, $handle, $eldnah);
                 $firstVal           = $children[1]->accept($this, $handle, $eldnah)->getValue();
@@ -638,22 +671,22 @@ class Interpreter implements \Hoa\Visitor\Visit
                         break;
                     }
                 }
-                $this->_environment = $oldEnvironment;
+                $this->environment = $oldEnvironment;
                 if (true === isset($returnedValue)) {
                     return $returnedValue;
                 }
                 break;
 
             case '#for_in_loop':
-                $oldEnvironment     = $this->_environment;
-                $this->_environment = new \Hoathis\Lua\Model\Environment('block', $this->_environment);
+                $oldEnvironment     = $this->environment;
+                $this->environment = new \Hoathis\Lua\Model\Environment('block', $this->environment);
                 $forVars            = $children[0]->accept($this, $handle, self::AS_SYMBOL);
                 $iterator           = $children[1]->accept($this, $handle, self::AS_VALUE);
                 $forBlock           = $children[2];
                 if ($iterator instanceof \Hoathis\Lua\Model\ValueGroup) {
                     $iteratorValues = $iterator->getValue();
                     if (!($iteratorValues[0]->getValue() instanceof \Hoathis\Lua\Model\Closure)) {
-                        $this->_environment = $oldEnvironment;
+                        $this->environment = $oldEnvironment;
                         throw new \Hoathis\Lua\Exception\Interpreter(
                         'Invalid first value in for in loop', 1);
                     }
@@ -666,10 +699,10 @@ class Interpreter implements \Hoa\Visitor\Visit
                         $iteratorStart = new \Hoathis\Lua\Model\Value(null);
                     }
                     $args = array($iteratorSubject, $iteratorStart);
-                    //$oldForEnvironment = $this->_environment;
-                    //$this->_environment = $iteratorFunction;
+                    //$oldForEnvironment = $this->environment;
+                    //$this->environment = $iteratorFunction;
                     $vals = $iteratorFunction->call($args, $this);
-                    //$this->_environment = $oldForEnvironment;
+                    //$this->environment = $oldForEnvironment;
                     if (!($vals instanceof \Hoathis\Lua\Model\ValueGroup)) {
                         throw new \Hoathis\Lua\Exception\Interpreter(
                         'Invalid iterator that does\'nt return two values', 1);
@@ -678,16 +711,16 @@ class Interpreter implements \Hoa\Visitor\Visit
                         $this->setValueGroupToValueGroup($forVars, $vals, true);
                         $blockVal = $forBlock->accept($this, $handle, self::AS_VALUE);
                         if ($blockVal instanceof \Hoathis\Lua\Model\ReturnedValue) {
-                            $this->_environment = $oldEnvironment;
+                            $this->environment = $oldEnvironment;
                             return $blockVal;
                         } elseif ($blockVal instanceof \Hoathis\Lua\Model\BreakStatement) {
                             break;
                         }
                         $args = array($iteratorSubject, $vals[0]);
-                        //$oldForEnvironment = $this->_environment;
-                        //$this->_environment = $iteratorFunction;
+                        //$oldForEnvironment = $this->environment;
+                        //$this->environment = $iteratorFunction;
                         $vals = $iteratorFunction->call($args, $this);
-                        //$this->_environment = $oldForEnvironment;
+                        //$this->environment = $oldForEnvironment;
                         if (false === is_null($vals)            // null is the value of a non returning function
                             && !($vals instanceof \Hoathis\Lua\Model\ValueGroup)) {
                             throw new \Hoathis\Lua\Exception\Interpreter(
@@ -695,13 +728,13 @@ class Interpreter implements \Hoa\Visitor\Visit
                         }
                     }
                 }
-                $this->_environment = $oldEnvironment;
+                $this->environment = $oldEnvironment;
                 break;
 
             case '#break':
                 return new \Hoathis\Lua\Model\BreakStatement(null);
 
-            case 'token':
+            /*case 'token':
                 $token = $element->getValueToken();
                 $value = $element->getValueValue();
 
@@ -709,7 +742,7 @@ class Interpreter implements \Hoa\Visitor\Visit
 
                     case 'identifier':
                         if (self::AS_VALUE === $eldnah) {
-                            return $this->_environment[$value]->getValue();
+                            return $this->environment[$value]->getValue();
                         }
                         return $value;
 
@@ -741,21 +774,21 @@ class Interpreter implements \Hoa\Visitor\Visit
                         return new \Hoathis\Lua\Model\Value(true);
 
                     case 'tpoint':
-                        if (false === $this->_environment->isFunctionContext()) {
+                        if (false === $this->environment->isFunctionContext()) {
                             throw new \Hoathis\Lua\Exception\Interpreter(
                             'Symbol ... is not available outside of function.', 1, $token);
                         }
-                        if (false === isset($this->_environment['...'])) {
+                        if (false === isset($this->environment['...'])) {
                             throw new \Hoathis\Lua\Exception\Interpreter(
                             'Symbol ... is unknown in this function.', 1, $token);
                         }
-                        return $this->_environment['...']->getValue();
+                        return $this->environment['...']->getValue();
 
                     default:
                         throw new \Hoathis\Lua\Exception\Interpreter(
                         'Token %s is not yet implemented.', 1, $token);
                 }
-                break;
+                break;*/
 
             default:
                 throw new \Hoathis\Lua\Exception\Interpreter(
@@ -772,13 +805,18 @@ class Interpreter implements \Hoa\Visitor\Visit
         }
     }
 
+    public function getEnvironment()
+    {
+        return $this->environment;
+    }
+
     /**
      *
      */
     public function getRoot()
     {
 
-        return $this->_environment;
+        return $this->environment;
     }
 
     /**
@@ -787,32 +825,32 @@ class Interpreter implements \Hoa\Visitor\Visit
     public function setRoot(\Hoathis\Lua\Model\Environment $env)
     {
 
-        $this->_environment = $env;
+        $this->environment = $env;
     }
 
     public function setValueToSymbol($symbol, $value, $local = false)
     {
-        if (true === $local && false === $this->_environment->localExists($symbol)) {
-            $this->_environment->localSet($symbol,
+        if (true === $local && false === $this->environment->localExists($symbol)) {
+            $this->environment->localSet($symbol,
                 new \Hoathis\Lua\Model\Variable(
-                $symbol, $this->_environment
+                $symbol, $this->environment
             ));
-        } elseif (false === isset($this->_environment[$symbol])) {
-            $this->_environment[$symbol] = new \Hoathis\Lua\Model\Variable(
-                $symbol, $this->_environment
+        } elseif (false === isset($this->environment[$symbol])) {
+            $this->environment[$symbol] = new \Hoathis\Lua\Model\Variable(
+                $symbol, $this->environment
             );
         }
         if ($value instanceof \Hoathis\Lua\Model\Value) {
             if ($value->isReference()) {
-                //$value->copyAsReferenceTo($this->_environment[$symbol]);
-                $this->_environment[$symbol]->setValue($value);
+                //$value->copyAsReferenceTo($this->environment[$symbol]);
+                $this->environment[$symbol]->setValue($value);
             } else {
-                $this->_environment[$symbol]->setValue($value);
+                $this->environment[$symbol]->setValue($value);
             }
         } elseif ($value instanceof \Hoathis\Lua\Model\WrapperScalar) {
-            $this->_environment[$symbol]->setValue(new \Hoathis\Lua\Model\Value($value->getValue()));
+            $this->environment[$symbol]->setValue(new \Hoathis\Lua\Model\Value($value->getValue()));
         } else {
-            $this->_environment[$symbol]->setValue(new \Hoathis\Lua\Model\Value($value));
+            $this->environment[$symbol]->setValue(new \Hoathis\Lua\Model\Value($value));
         }
     }
 
@@ -877,7 +915,7 @@ class Interpreter implements \Hoa\Visitor\Visit
 
     public function stdIpairs($table)
     {
-        $iter = new \Hoathis\Lua\Model\Closure('__iter', $this->_environment, array(),
+        $iter = new \Hoathis\Lua\Model\Closure('__iter', $this->environment, array(),
             function ($a, $i) {
             $i = $i + 1;
             if (isset($a[$i])) {
@@ -935,7 +973,7 @@ class Interpreter implements \Hoa\Visitor\Visit
     {
         $returnedValues = new \Hoathis\Lua\Model\ValueGroup(array());
         $returnedValues->addValue(new \Hoathis\Lua\Model\Value(new \Hoathis\Lua\Model\Closure('__next',
-            $this->_environment, array(), array($this, 'stdNext'))));
+            $this->environment, array(), array($this, 'stdNext'))));
         $returnedValues->addValue(new \Hoathis\Lua\Model\Value($table, \Hoathis\Lua\Model\Value::REFERENCE));
         $returnedValues->addValue(new \Hoathis\Lua\Model\Value(null));
         return $returnedValues;

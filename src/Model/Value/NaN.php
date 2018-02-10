@@ -10,9 +10,9 @@ namespace Hoathis\Lua\Model\Value;
 /**
  * Description of Nil
  *
- * @author houra
+ * @author Guislain Duthieuw
  */
-class NaN extends Value
+class NaN extends \Hoathis\Lua\Model\Value
 {
     const TYPE='NaN';
 }

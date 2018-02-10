@@ -1,115 +1,49 @@
 <?php
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 
 namespace Hoathis\Lua\Model;
 
 /**
- * Class \Hoathis\Lua\Model\Variable.
+ * Description of Value
  *
- * Variable.
- *
- * @author     Guislain Duthieuw <guislain.duthieuw@gmail.com>
- * @copyright  Copyright © 2007-2013 Ivan Enderlin.
- * @license    New BSD License
+ * @author Guislain Duthieuw
  */
+abstract class Value
+{
+    /**
+     *
+     * @var Hoathis\Lua\Model
+     */
+    protected $metatable;
 
-class Value {
+    protected $content;
 
-    protected $_value      = null;
-    protected $_referenceType = false;
-    protected $_container;
-    protected $setValueFunction;
-
-    const SCALAR = 0;
-    const REFERENCE = 1;
-
-
-    public function __construct ( $value, $referenceType = self::SCALAR) {
-
-        $this->_referenceType = $referenceType;
-        if ($this->_referenceType === self::REFERENCE) {
-            $this->_value       = new self($value);
-        } else {
-            $this->_value = $value;
-        }
-        $this->setValueFunction = array($this, 'setValueFunction');
+    public function __construct($value = null)
+    {
+        $this->content = $value;
     }
 
-    public function setSetValueFunction($setValueFunction) {
-        $this->setValueFunction = $setValueFunction;
-    }
-
-    public function setValue($value) {
-        return call_user_func($this->setValueFunction, $value);
-    }
-
-    protected function setValueFunction ( $value ) {
-        if ($value instanceof self) {
-            $val = $value->getValue();
-        } else {
-            $val = $value;
-        }
-        if ($this->_referenceType === self::REFERENCE) {
-            $old          = $this->_value->getValue();
-            $this->_value->setValue($val);
-        } else {
-            $old          = $this->_value;
-            $this->_value = $val;
-        }
-        return $old;
-    }
-
-    public function getValue ( ) {
-        if ($this->_referenceType === self::REFERENCE) {
-            return $this->_value->getValue();
-        } else {
-            return $this->_value;
+    protected function initMetaTable() {
+        if(!$this->metatable instanceof Value\Table) {
+            $this->metatable = new Value\Table;
         }
     }
 
-    public function getReference() {
-        if ($this->_referenceType === self::REFERENCE) {
-            return $this->_value;
-        } else {
-            return $this;
-        }
+    public function getmetatable() {
+        $this->initMetaTable();
+        return $this->metatable;
     }
 
-    public function setReference($newReference) {
-        if ($this->_referenceType === self::REFERENCE) {
-            $old = $this->_value->getValue();
-        } else {
-            $old = $this->_value;
-        }
-        $this->_value = $newReference;
-        $this->_referenceType = self::REFERENCE;
-        return $old;
+    public function setmetatable(Value\Table $metatable) {
+        $this->metatable = $metatable;
     }
 
-    public function isReference() {
-        return $this->_referenceType === self::REFERENCE;
-    }
-
-    public function getPHPValue() {
-        $val = $this->getValue();
-        if (true === is_array($val)) {
-            $result = array();
-            foreach ($val as $k => $v) {
-                if ($v instanceof self) {
-                    $result[$k] = $v->getPHPValue();
-                } else {
-                    $result[$k] = $v;
-                }
-            }
-            return $result;
-        }
-        return $this->getValue();
-    }
-
-    public function setContainer($container) {
-        $this->_container = $container;
-    }
-
-    public function getContainer() {
-        return $this->_container;
+    public function toPHP()
+    {
+        return $this->content;
     }
 }
