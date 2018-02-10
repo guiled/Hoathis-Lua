@@ -13,17 +13,38 @@ namespace Hoathis\Lua\Model;
  */
 class Environment extends Value\Table
 {
-    const GLOBAL_NAME = '_ENV';
+    const ENV_NAME = '_ENV';
+    const GLOBAL_NAME = '_G';
 
-    public function __construct($value = null)
+    protected $isRoot;
+
+    protected $parent;
+
+    public function __construct($parent = null)
     {
-        parent::__construct($value);
+        $this->isRoot = (is_null($parent));
+        $this->parent = $parent;
+        parent::__construct($parent);
     }
 
     public function get($name)
     {
-        // @lua _ENV contains all global variables and functions
+        /**
+         * @link http://www.lua.org/manual/5.3/manual.html#2.2
+         * @lua In Lua, the global variable _G is initialized with this same value.
+         */
         if ($name === self::GLOBAL_NAME) {
+            if ($this->isRoot) {
+                return $this;
+            } else {
+                return $this->parent->get($name);
+            }
+        }
+        /**
+         * @link http://www.lua.org/manual/5.3/manual.html#2.2
+         * @lua  As will be discussed in §3.2 and §3.3.3, any reference to a free name (that is, a name not bound to any declaration) var is syntactically translated to _ENV.var.
+         */
+        if ($name === self::ENV_NAME) {
             return $this;
         }
         return parent::get($name);
@@ -31,10 +52,17 @@ class Environment extends Value\Table
 
     public function set($name, Value $value)
     {
-        // @lua set _ENV to an other value does nothing
+        /**
+         * @lua set _ENV to an other value does nothing
+         */
         if ($name !== self::GLOBAL_NAME) {
             parent::set($name, $value);
         }
+    }
+
+    public function exists($name)
+    {
+        return $name === self::ENV_NAME || $name === self::GLOBAL_NAME || parent::exists($name);
     }
     /*    protected $_name         = null;
       protected $_environments = null;

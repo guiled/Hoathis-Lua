@@ -5,11 +5,23 @@ use Hoathis\Lua\Tests\Luatoum;
 
 class Interpreter extends Luatoum {
 
+    public function testGlobalEnvironment()
+    {
+        $this
+            ->assert('Global environment is _G and _ENV')
+            ->lua('')
+                ->hasVariable('_G')
+                ->hasVariable('_ENV')
+            ->array($this->lua->getVariable('_G'))->isIdenticalTo($this->lua->getVariable('_ENV'))
+        ;
+    }
+
     public function testDeclaration()
     {
         $this
             ->assert('Declaration of a symbol')
             ->lua('a=true')->isParsed->hasVariable('a')
+            ->Boolean($this->lua->getVariable('a'))->isTrue
             ->lua('a=true;b=true')->hasVariable('a')->hasVariable('b')->hasNotVariable('c')
                 ->code('a.=2')->isNotParsed
                 ->code('local _b=2')->isParsed //@todo tester l'exécution du code
@@ -56,7 +68,7 @@ class Interpreter extends Luatoum {
             ->lua('print(100-58)')->outputLF('42')
             ->code('a=3;print(4-1-a);')->outputLF('0')
             ->code('a=2;print(4-1+a);')->dumpAST->outputLF('5')
-            ->code('a=2;print(4-(1+a));')->dumpAST->outputLF('5')
+            ->code('a=2;print(4-(1+a));')->dumpAST->outputLF('1')
 
 //            ->assert('Test division multiplication parenthesis')
 //            ->lua('print((4/2)*3);')->outputLF("6")
@@ -65,6 +77,11 @@ class Interpreter extends Luatoum {
 //            ->luaOutput('print(4/2*3);')->isEqualTo("6" . PHP_EOL)
             ;
     }
+
+    /*public function testComparison()
+    {
+        
+    }*/
 /*
     public function testPhpLuaIntegration() {
         $this

@@ -228,7 +228,7 @@ class Lua extends asserter
         if ($this->getVisitor()->getEnvironment()->exists($variableName)) {
             $this->pass();
         } else {
-            $failMessage = $failMessage || sprintf('Lua variable %s does not exist', $variableName);
+            $failMessage = $failMessage ?? sprintf('Lua variable %s does not exist', $variableName);
             $this->fail($failMessage);
         }
 
