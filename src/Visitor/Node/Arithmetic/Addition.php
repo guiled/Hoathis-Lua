@@ -18,7 +18,10 @@ class Addition extends \Hoathis\Lua\Visitor\Node
         $child0 = $this->getValue($children[0]->accept($this->interpreter, $handle, $eldnah));
         $child1 = $this->getValue($children[1]->accept($this->interpreter, $handle, $eldnah));
 
-        // @lua Addition is left associative
+        /**
+         * @link http://www.lua.org/manual/5.3/manual.html#3.4.8
+         * @lua The concatenation ('..') and exponentiation ('^') operators are right associative. All other binary operators are left associative.
+         */
         if (null !== $parent && '#substraction' === $parent->getId()) {
             return new \Hoathis\Lua\Model\Value\Number($child0->toPHP() - $child1->toPHP());
         }
