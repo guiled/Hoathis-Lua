@@ -35,6 +35,7 @@ class Interpreter implements \Hoa\Visitor\Visit
         $this->visitors['#arguments'] = (new Node\Arguments())->setInterpreter($this);
         $this->visitors['#addition'] = (new Node\Arithmetic\Addition())->setInterpreter($this);
         $this->visitors['#substraction'] = (new Node\Arithmetic\Substraction())->setInterpreter($this);
+        $this->visitors['#onlyfirst'] = (new Node\OnlyFirst())->setInterpreter($this);
 
         $this->environment = new \Hoathis\Lua\Model\Environment();
         $basic = new \Hoathis\Lua\Library\Basic();
@@ -161,14 +162,14 @@ class Interpreter implements \Hoa\Visitor\Visit
                 }
                 return $group;
 
-            case '#onlyfirst':
+            /*case '#onlyfirst':
                 $childValue = $children[0]->accept($this, $handle, $eldnah);
                 if ($childValue instanceof \Hoathis\Lua\Model\ValueGroup) {
                     $values = $childValue->getValue();
                     return $values[0];
                 } else {
                     return $childValue;
-                }
+                }*/
 
             case '#negative':
                 return -($children[0]->accept($this, $handle, self::AS_VALUE));
@@ -192,7 +193,7 @@ class Interpreter implements \Hoa\Visitor\Visit
                 }
 
                 return new \Hoathis\Lua\Model\Value($child0->getValue() + $child1->getValue());*/
-            case '#substraction':
+            /*case '#substraction':
                 $parent = $element->getParent();
                 $child0 = $children[0]->accept($this, $handle, self::AS_VALUE);
                 $child1 = $children[1]->accept($this, $handle, self::AS_VALUE);
@@ -202,7 +203,7 @@ class Interpreter implements \Hoa\Visitor\Visit
                 }
 
                 return new \Hoathis\Lua\Model\Value($child0->getValue() - $child1->getValue());
-
+                */
             case '#power':
                 //print_r($this->environment->_symbols);
                 $child0 = $children[0]->accept($this, $handle, self::AS_VALUE);
