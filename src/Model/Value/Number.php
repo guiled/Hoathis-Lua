@@ -9,7 +9,7 @@ namespace Hoathis\Lua\Model\Value;
  */
 class Number extends \Hoathis\Lua\Model\Value
 {
-    const TYPE = 'boolean';
+    const TYPE = 'number';
 
     public function __construct($value = null)
     {

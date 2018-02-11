@@ -8,7 +8,7 @@ namespace Hoathis\Lua\Model\Value;
  */
 class Boolean extends \Hoathis\Lua\Model\Value
 {
-    const TYPE='number';
+    const TYPE='boolean';
 
     public function isTrue() {
         return ($this->content === true);
