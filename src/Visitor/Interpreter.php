@@ -37,6 +37,7 @@ class Interpreter implements \Hoa\Visitor\Visit
         $this->visitors['#substraction'] = (new Node\Arithmetic\Substraction())->setInterpreter($this);
         $this->visitors['#multiplication'] = (new Node\Arithmetic\Multiplication())->setInterpreter($this);
         $this->visitors['#division'] = (new Node\Arithmetic\Division())->setInterpreter($this);
+        $this->visitors['#power'] = (new Node\Arithmetic\Power())->setInterpreter($this);
         $this->visitors['#onlyfirst'] = (new Node\OnlyFirst())->setInterpreter($this);
         $this->visitors['#comparison'] = (new Node\Comparison())->setInterpreter($this);
 

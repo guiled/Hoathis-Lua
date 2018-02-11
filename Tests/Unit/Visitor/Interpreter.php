@@ -115,6 +115,11 @@ class Interpreter extends Luatoum {
             ->lua('print(4/2*3+1*5);')->outputLF("11")
             ->lua('print(4/2*(3+1)*5);')->outputLF("40")
             ->lua('print(4-2+3)')->outputLF('5')
+
+            ->assert('Test exponentiation')
+            ->lua('print(2^2)')->outputLF('4')
+            ->lua('print(2^3^2)')->outputLF('512')
+            ->lua('a=2;b=3;c=2;print(a^b^c)')->outputLF('512')
             ;
     }
 
