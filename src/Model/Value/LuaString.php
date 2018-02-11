@@ -7,7 +7,7 @@ namespace Hoathis\Lua\Model\Value;
  *
  * @author Guislain Duthieuw
  */
-class String extends \Hoathis\Lua\Model\Value
+class LuaString extends \Hoathis\Lua\Model\Value
 {
-
+    const TYPE="string";
 }

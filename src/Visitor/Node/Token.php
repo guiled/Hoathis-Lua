@@ -49,11 +49,11 @@ class Token extends \Hoathis\Lua\Visitor\Node
             case 'string':
                 // Trim on left and right the string delimiters
                 $val = preg_replace('/([\'"])(.*?)\1/', '$2', $value, 1);
-                return new Value\String($val);
+                return new Value\LuaString($val);
             case 'longstring':
                 // Trim on left and right the string delimiters
                 $val = preg_replace('/\[(=*)\[((?:.|\n)*?)\]\1\]/', '$2', $value, 1);
-                return new Value\String($val);
+                return new Value\LuaString($val);
 
             case 'nil':
                 return new Value\Nil();
@@ -62,7 +62,6 @@ class Token extends \Hoathis\Lua\Visitor\Node
                 return new Value\Boolean(false);
 
             case 'true':
-                echo 'fldjflskjfsdlkj';
                 return new Value\Boolean(true);
 
 //            case 'tpoint':
