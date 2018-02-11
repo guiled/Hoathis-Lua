@@ -87,7 +87,21 @@ class Interpreter extends Luatoum {
         ;
     }
 
-    public function testArithmetic()
+    public function testType()
+    {
+        $this
+            ->assert('Test type basic function')
+            ->lua('print(type(1))')->outputLF('number')
+            ->lua('print(type("1"))')->outputLF('string')
+            ->lua('print(type(true))')->outputLF('boolean')
+            ->lua('print(type(false))')->outputLF('boolean')
+            ->lua('print(type(1/0))')->outputLF('number')
+            ->lua('print(type(0/0))')->outputLF('number')
+            ->lua('print(type(a))')->outputLF('nil')
+        ;
+    }
+
+   public function testArithmetic()
     {
         $this
             ->assert('Addition')

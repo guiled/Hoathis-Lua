@@ -44,6 +44,7 @@ class Interpreter implements \Hoa\Visitor\Visit
         $this->environment = new \Hoathis\Lua\Model\Environment();
         $basic = new \Hoathis\Lua\Library\Basic();
         $this->environment->set('print', new Value\Closure(array($basic, 'stdPrint')));
+        $this->environment->set('type', new Value\Closure(array($basic, 'type')));
         //$this->environment->setFunction('ipairs', array($this, 'stdIpairs'));
         //$this->environment->setFunction('next', array($this, 'stdNext'));
         //$this->environment->setFunction('pairs', array($this, 'stdPairs'));

@@ -1,4 +1,5 @@
 <?php
+
 namespace Hoathis\Lua\Library;
 
 /**
@@ -8,35 +9,29 @@ namespace Hoathis\Lua\Library;
  */
 class Basic
 {
+
     public function stdPrint()
     {
+        /**
+         * @link http://www.lua.org/manual/5.3/manual.html#pdf-print Lua 5.3 Manual § 6.1 – Basic Functions - print (···)
+         * @lua Receives any number of arguments and prints their values to stdout
+         */
         $args = func_get_args();
         $sep  = '';
         foreach ($args as $arg) {
             echo $sep;
-            if ($arg instanceof \Hoathis\Lua\Model\Value\Boolean) {
-                if ($arg->isTrue()) {
-                    echo 'true';
-                } else {
-                    echo 'false';
-                }
-            } else {
-                echo $arg->toPHP();
-            }
-
-            /*if (true === is_null($arg)) {
-                echo 'nil';
-            } elseif (false === $arg) {
-                echo 'false';
-            } elseif (true === is_array($arg)) {
-                echo 'array';
-            } elseif (true === is_callable($arg) || $arg instanceof \Hoathis\Lua\Model\Closure) {
-                echo 'function';
-            } else {
-                echo $arg;
-            }*/
+            echo $arg;
             $sep = "\t";
         }
         echo "\n";
+    }
+
+    public function type(\Hoathis\Lua\Model\Value $value)
+    {
+        /**
+         * @link http://www.lua.org/manual/5.3/manual.html#pdf-type Lua 5.3 Manual § 6.1 – Basic Functions - type (v)
+         * @lua Returns the type of its only argument, coded as a string. The possible results of this function are "nil" (a string, not the value nil), "number", "string", "boolean", "table", "function", "thread", and "userdata". 
+         */
+        return new \Hoathis\Lua\Model\Value\LuaString($value::TYPE);
     }
 }
