@@ -42,6 +42,26 @@ class Lua extends asserter
         }
     }
 
+    public function __call($method, $arguments)
+    {
+        switch (strtolower($method)) {
+            case 'integer':
+            case 'float':
+            case 'string':
+            case 'array':
+            case 'boolean':
+            case 'object':
+            case 'variable':
+            case 'function':
+                $variableName = $arguments[0];
+                if (is_string($variableName) && $this->getVisitor()->getEnvironment()->exists($variableName)) {
+                    $value = $this->getVisitor()->getEnvironment()->get($variableName);
+                    return parent::__call($method, [$value->toPHP()]);
+                }
+        }
+        return parent::__call($method, $arguments);
+    }
+
     public function getVisitor()
     {
         if (!$this->visitor) {

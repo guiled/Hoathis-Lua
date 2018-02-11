@@ -12,7 +12,7 @@ class Interpreter extends Luatoum {
             ->lua('')
                 ->hasVariable('_G')
                 ->hasVariable('_ENV')
-            ->array($this->lua->getVariable('_G'))->isIdenticalTo($this->lua->getVariable('_ENV'))
+            ->array('_G')->isIdenticalTo($this->lua->getVariable('_ENV'))
         ;
     }
 
@@ -21,7 +21,7 @@ class Interpreter extends Luatoum {
         $this
             ->assert('Declaration of a symbol')
             ->lua('a=true')->isParsed->hasVariable('a')
-            ->Boolean($this->lua->getVariable('a'))->isTrue
+            ->boolean('a')->isTrue
             ->assert('New environment')
             ->lua('b=true')->hasNotVariable('a')->hasVariable('b')->hasNotVariable('c')
                 ->code('a.=2')->isNotParsed
@@ -74,7 +74,7 @@ class Interpreter extends Luatoum {
             ->assert('Declaration of a symbol')
             ->given($value = mt_rand(0, 3000))
             ->lua($identifier . '='.$value)->hasVariable($identifier)
-            ->integer($this->lua->getVariable($identifier))->isEqualTo($value)
+            ->integer($identifier)->isEqualTo($value)
         ;
     }
 
