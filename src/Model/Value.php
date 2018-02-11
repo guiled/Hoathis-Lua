@@ -46,4 +46,9 @@ abstract class Value
     {
         return $this->content;
     }
+
+    public function __toString()
+    {
+        return (string) $this->content;
+    }
 }

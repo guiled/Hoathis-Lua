@@ -18,4 +18,13 @@ class Boolean extends \Hoathis\Lua\Model\Value
         return ($this->content === false);
     }
 
+    public function __toString()
+    {
+        if ($this->content === true) {
+            return 'true';
+        } else {
+            return 'false';
+        }
+    }
+
 }
