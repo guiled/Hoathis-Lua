@@ -12,7 +12,11 @@ namespace Hoathis\Lua\Model\Value;
  *
  * @author Guislain Duthieuw
  */
-class NaN extends \Hoathis\Lua\Model\Value
+class NaN extends \Hoathis\Lua\Model\Value\Number
 {
-    const TYPE='NaN';
+
+    public function __toString()
+    {
+        return 'nan';
+    }
 }

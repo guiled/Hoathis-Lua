@@ -98,15 +98,16 @@ class Interpreter extends Luatoum {
             ->assert('Substraction')
             ->lua('print(100-58)')->outputLF('42')
             ->code('a=3;print(4-1-a);')->outputLF('0')
-            ->code('a=2;print(4-1+a);')->dumpAST->outputLF('5')
-            ->code('a=2;print(4-(1+a));')->dumpAST->outputLF('1')
+            ->code('a=2;print(4-1+a);')->outputLF('5')
+            ->code('a=2;print(4-(1+a));')->outputLF('1')
 
             ->assert('Test division multiplication parenthesis')
             ->lua('print(2*3);')->outputLF("6")
-//            ->lua('print((4/2)*3);')->outputLF("6")
-
-//            ->assert('Test left assignation of basic operators')
-//            ->luaOutput('print(4/2*3);')->isEqualTo("6" . PHP_EOL)
+            ->lua('print(4/2);')->outputLF("2")
+            ->lua('print((4/2)*3);')->outputLF("6")
+            ->lua('print(1/0)')->outputLF("inf")
+            ->lua('print(2/0)')->outputLF("inf")
+            ->lua('print(0/0)')->outputLF("nan")
             ;
     }
 

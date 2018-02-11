@@ -8,16 +8,15 @@
 namespace Hoathis\Lua\Model\Value;
 
 /**
- * Description of Nil
+ * Description of Inf
  *
  * @author Guislain Duthieuw
  */
-class Nil extends \Hoathis\Lua\Model\Value
+class Inf extends \Hoathis\Lua\Model\Value\Number
 {
-    const TYPE='nil';
 
     public function __toString()
     {
-        return 'nil';
+        return ($this->content < 0 ? '-' : '') . 'inf';
     }
 }
