@@ -10,6 +10,10 @@ namespace Hoathis\Lua\Visitor\Node;
 class Comparison extends \Hoathis\Lua\Visitor\Node
 {
 
+    public function getHandledNodes() {
+        return ['#comparison'];
+    }
+
     public function visit(\Hoa\Visitor\Element $element, &$handle = null, $eldnah = null)
     {
         $children = $element->getChildren();

@@ -9,17 +9,8 @@ namespace Hoathis\Lua\Visitor\Node;
  */
 class Arguments extends \Hoathis\Lua\Visitor\Node
 {
-    protected $interpreter;
-
-    public function getInterpreter()
-    {
-        return $this->interpreter;
-    }
-
-    public function setInterpreter($interpreter)
-    {
-        $this->interpreter = $interpreter;
-        return $this;
+    public function getHandledNodes() {
+        return ['#arguments'];
     }
 
     /**

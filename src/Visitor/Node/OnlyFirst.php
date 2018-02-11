@@ -10,6 +10,10 @@ namespace Hoathis\Lua\Visitor\Node;
 class OnlyFirst extends \Hoathis\Lua\Visitor\Node
 {
 
+    public function getHandledNodes() {
+        return ['#onlyfirst'];
+    }
+
     public function visit(\Hoa\Visitor\Element $element, &$handle = null, $eldnah = null)
     {
         /**

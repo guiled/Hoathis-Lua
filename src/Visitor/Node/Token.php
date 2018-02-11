@@ -10,17 +10,10 @@ use \Hoathis\Lua\Model\Value;
  */
 class Token extends \Hoathis\Lua\Visitor\Node
 {
-    protected $interpreter;
 
-    public function getInterpreter()
+    public function getHandledNodes()
     {
-        return $this->interpreter;
-    }
-
-    public function setInterpreter($interpreter)
-    {
-        $this->interpreter = $interpreter;
-        return $this;
+        return ['token'];
     }
 
     /**

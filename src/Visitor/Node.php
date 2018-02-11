@@ -30,6 +30,11 @@ abstract class Node implements \Hoa\Visitor\Visit
         return $this;
     }
 
+    /**
+     * @return array
+     */
+    public function getHandledNodes() {}
+
     protected function getValue($identifier)
     {
         if (is_string($identifier)) {

@@ -9,21 +9,9 @@ namespace Hoathis\Lua\Visitor\Node;
  */
 class FunctionCall extends \Hoathis\Lua\Visitor\Node
 {
-    /**
-     *
-     * @var \Hoathis\Lua\Visitor\Interpreter
-     */
-    protected $interpreter;
 
-    public function getInterpreter()
-    {
-        return $this->interpreter;
-    }
-
-    public function setInterpreter($interpreter)
-    {
-        $this->interpreter = $interpreter;
-        return $this;
+    public function getHandledNodes() {
+        return ['#function_call'];
     }
 
     /**

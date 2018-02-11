@@ -84,6 +84,7 @@ class Interpreter extends Luatoum {
             ->assert('Test if print sends to output')
             ->lua('print(41);')->outputLF('41')
             ->code('a=42;print(a);')->outputLF("42")->hasVariable('a')
+            ->code('print(1.2)')->outputLF("1.2")
         ;
     }
 
@@ -98,6 +99,13 @@ class Interpreter extends Luatoum {
             ->lua('print(type(1/0))')->outputLF('number')
             ->lua('print(type(0/0))')->outputLF('number')
             ->lua('print(type(a))')->outputLF('nil')
+        ;
+    }
+
+    public function testNumberNotation()
+    {
+        $this
+            ->assert('Test ')
         ;
     }
 
@@ -130,10 +138,21 @@ class Interpreter extends Luatoum {
             ->lua('print(4/2*(3+1)*5);')->outputLF("40")
             ->lua('print(4-2+3)')->outputLF('5')
 
+            ->assert('Test negative')
+            ->lua('a=-2')->integer('a')->isEqualTo(-2)
+            ->lua('b=a^3')->integer('b')->isEqualTo(-8)
+            ->lua('c=b*b')->integer('c')->isEqualTo(64)
+
+            ->assert('Test floor division')
+            ->assert('Test modulo')
             ->assert('Test exponentiation')
             ->lua('print(2^2)')->outputLF('4')
             ->lua('print(2^3^2)')->outputLF('512')
             ->lua('a=2;b=3;c=2;print(a^b^c)')->outputLF('512')
+
+            ->assert('Test arithmetics with nan')
+            ->lua('a=0/0')->output('')
+            ->code('print(a)')->outputLF('nan')
             ;
     }
 

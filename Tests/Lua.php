@@ -54,9 +54,12 @@ class Lua extends asserter
             case 'variable':
             case 'function':
                 $variableName = $arguments[0];
-                if (is_string($variableName) && $this->getVisitor()->getEnvironment()->exists($variableName)) {
-                    $value = $this->getVisitor()->getEnvironment()->get($variableName);
-                    return parent::__call($method, [$value->toPHP()]);
+                if (is_string($variableName)) {
+                    $this->execute();
+                    if ($this->getVisitor()->getEnvironment()->exists($variableName)) {
+                        $value = $this->getVariable($variableName);
+                        return parent::__call($method, [$value]);
+                    }
                 }
         }
         return parent::__call($method, $arguments);
@@ -105,7 +108,7 @@ class Lua extends asserter
                 $this->executed = true;
                 $this->output   = ob_get_clean();
             } catch (\Hoathis\Lua\Exception\Interpreter $e) {
-                $this->message = 'There is a problem during execution of "' . $this->code . '"' . PHP_EOL . "Visitor message : " . $e->getMessage();
+                $this->fail('There is a problem during execution of "' . $this->code . '"' . PHP_EOL . "Visitor message : " . $e->getMessage());
             }
         }
     }

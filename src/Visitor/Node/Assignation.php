@@ -9,6 +9,10 @@ namespace Hoathis\Lua\Visitor\Node;
 class Assignation extends \Hoathis\Lua\Visitor\Node
 {
 
+    public function getHandledNodes() {
+        return ['#assignation'];
+    }
+
     public function visit(\Hoa\Visitor\Element $element, &$handle = null, $eldnah = null)
     {
         $children = $element->getChildren();

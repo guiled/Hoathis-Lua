@@ -10,19 +10,9 @@ namespace Hoathis\Lua\Visitor\Node;
 class Block extends \Hoathis\Lua\Visitor\Node
 {
 
-    protected $interpreter;
-
-    public function getInterpreter()
-    {
-        return $this->interpreter;
+    public function getHandledNodes() {
+        return ['#block'];
     }
-
-    public function setInterpreter($interpreter)
-    {
-        $this->interpreter = $interpreter;
-        return $this;
-    }
-
 
     /**
      *
