@@ -22,9 +22,9 @@ class Addition extends \Hoathis\Lua\Visitor\Node
          * @link http://www.lua.org/manual/5.3/manual.html#3.4.8
          * @lua The concatenation ('..') and exponentiation ('^') operators are right associative. All other binary operators are left associative.
          */
-        if (null !== $parent && '#substraction' === $parent->getId()) {
-            return new \Hoathis\Lua\Model\Value\Number($child0->toPHP() - $child1->toPHP());
-        }
+        //if (null !== $parent && '#substraction' === $parent->getId()) {
+        //    return new \Hoathis\Lua\Model\Value\Number($child0->toPHP() - $child1->toPHP());
+        //}
 
         return new \Hoathis\Lua\Model\Value\Number($child0->toPHP() + $child1->toPHP());
     }

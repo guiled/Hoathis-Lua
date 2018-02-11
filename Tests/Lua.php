@@ -67,6 +67,7 @@ class Lua extends asserter
         if (!$this->ast) {
             try {
                 $this->ast = $this->getCompiler()->parse($this->code);
+                (new \Hoathis\Lua\Visitor\LL2LR)->visit($this->ast);
             } catch (\Hoa\Compiler\Exception $e) {
                 $this->message = 'This code can not be parsed "' . $this->code . '".' . PHP_EOL . "Parser message : " . $e->getMessage();
             }

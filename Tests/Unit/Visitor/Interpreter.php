@@ -108,6 +108,13 @@ class Interpreter extends Luatoum {
             ->lua('print(1/0)')->outputLF("inf")
             ->lua('print(2/0)')->outputLF("inf")
             ->lua('print(0/0)')->outputLF("nan")
+
+            ->assert('Test left precedence of basic operators')
+            ->lua('print(6/3*2)')->outputLF("4")
+            ->lua('print(4/2*3/1*5);')->outputLF("30")
+            ->lua('print(4/2*3+1*5);')->outputLF("11")
+            ->lua('print(4/2*(3+1)*5);')->outputLF("40")
+            ->lua('print(4-2+3)')->outputLF('5')
             ;
     }
 
