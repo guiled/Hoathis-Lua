@@ -147,6 +147,10 @@ class Interpreter extends Luatoum {
             ->lua('c=b*b')->integer('c')->isEqualTo(64)
 
             ->assert('Test floor division')
+            ->lua('a=9//2;')->float('a')->isEqualTo(4)
+            ->lua('a=-11//3;')->float('a')->isEqualTo(-4)
+            ->lua('print(1//0.0)')->outputLF('inf')
+
             ->assert('Test modulo')
             ->assert('Test exponentiation')
             ->lua('print(2^2)')->outputLF('4')

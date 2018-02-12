@@ -17,6 +17,7 @@ class Arithmetics extends \Hoathis\Lua\Visitor\Node
             '#substraction',
             '#multiplication',
             '#division',
+            '#floordivision',
             '#power',
             '#negative'
         ];
@@ -72,6 +73,25 @@ class Arithmetics extends \Hoathis\Lua\Visitor\Node
                  * @lua Exponentiation and float division (/) always convert their operands to floats and the result is always a float.
                  */
                 $value = (double) ((double) $values[0] / (double) $values[1]);
+                break;
+            case '#floordivision':
+                if (0 === $values[1]) {
+                    /**
+                     * @lua 1//0 raise a runtime error (maybe a bug ?)
+                     */
+                    throw new \Hoathis\Lua\Exception\Interpreter('attempt to divide by zero');
+                } elseif (0.0 === $values[1]) {
+                    /**
+                     * @lua 1//0.0 gives inf, -1/0.0 gives -inf (no manual reference)
+                     */
+                    return new \Hoathis\Lua\Model\Value\Inf($values[0]);
+                }
+                /**
+                 * Use of floor and not intdiv (which round to the integer toward 0)
+                 * @link http://www.lua.org/manual/5.3/manual.html#3.4.1 Lua 5.3 Manual § 3.4.1 – Arithmetic Operators
+                 * @lua Floor division (//) is a division that rounds the quotient towards minus infinity, that is, the floor of the division of its operands.
+                 */
+                $value = floor($values[0] / $values[1]);
                 break;
             case '#power':
                 $value = $values[0] ** $values[1];

@@ -217,7 +217,7 @@ expression_quaternary:
 
 expression_quinary:
     expression_senary()
-    ( ( ::times:: #multiplication | ::div:: #division | ::modulo:: #modulo )
+    ( ( ::times:: #multiplication | ::div:: #division | ::idiv:: #floordivision | ::modulo:: #modulo )
       expression() )?
 
 expression_senary:
