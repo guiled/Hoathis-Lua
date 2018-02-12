@@ -67,11 +67,11 @@ class Arithmetics extends \Hoathis\Lua\Visitor\Node
                     }
                 }
                 /**
-                 * Cast to float
+                 * Cast to double because it is required by lua manual
                  * @link http://www.lua.org/manual/5.3/manual.html#3.4.1 Lua 5.3 Manual § 3.4.1 – Arithmetic Operators
                  * @lua Exponentiation and float division (/) always convert their operands to floats and the result is always a float.
                  */
-                $value = (float) ((float) $values[0] / (float) $values[1]);
+                $value = (double) ((double) $values[0] / (double) $values[1]);
                 break;
             case '#power':
                 $value = $values[0] ** $values[1];

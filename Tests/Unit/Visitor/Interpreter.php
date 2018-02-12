@@ -105,7 +105,10 @@ class Interpreter extends Luatoum {
     public function testNumberNotation()
     {
         $this
-            ->assert('Test ')
+            ->assert('Test float declaration')
+            ->lua('a=1.2')->float('a')->isIdenticalTo(1.2)
+            ->lua('a=1.0;print(a)')->outputLF('1.0')
+            ->float('a')->isIdenticalTo(1.0)
         ;
     }
 
@@ -125,17 +128,17 @@ class Interpreter extends Luatoum {
 
             ->assert('Test division multiplication parenthesis')
             ->lua('print(2*3);')->outputLF("6")
-            ->lua('print(4/2);')->outputLF("2")
-            ->lua('print((4/2)*3);')->outputLF("6")
+            ->lua('print(4/2);')->outputLF("2.0")
+            ->lua('print((4/2)*3);')->outputLF("6.0")
             ->lua('print(1/0)')->outputLF("inf")
             ->lua('print(2/0)')->outputLF("inf")
             ->lua('print(0/0)')->outputLF("nan")
 
             ->assert('Test left precedence of basic operators')
-            ->lua('print(6/3*2)')->outputLF("4")
-            ->lua('print(4/2*3/1*5);')->outputLF("30")
-            ->lua('print(4/2*3+1*5);')->outputLF("11")
-            ->lua('print(4/2*(3+1)*5);')->outputLF("40")
+            ->lua('print(6/3*2)')->outputLF("4.0")
+            ->lua('print(4/2*3/1*5);')->outputLF("30.0")
+            ->lua('print(4/2*3+1*5);')->outputLF("11.0")
+            ->lua('print(4/2*(3+1)*5);')->outputLF("40.0")
             ->lua('print(4-2+3)')->outputLF('5')
 
             ->assert('Test negative')
