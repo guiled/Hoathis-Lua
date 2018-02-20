@@ -122,11 +122,11 @@ chunk:
 	block_code()
 
 block_code:
-	statement()* return_statement()?
+    statement()* return_statement()?
 
 statement:
     ::semicolon::
-  | variables_set() ::equal:: expressions() #assignation
+  | variables() ::equal:: expressions() #assignation
   | function_call()
   | label()
   | ::goto:: <identifier> #goto
@@ -152,47 +152,30 @@ return_statement:
     ::dcolon:: <identifier> ::dcolon::
 
 function_name:
-	(<identifier> ( ::point:: <identifier> #table_access_self)*
-    ::colon:: <identifier> #table_access_self)
-  | (<identifier> ( ::point:: <identifier> #table_access)*)
+    <identifier> ( ::point:: <identifier> )*
+    ( ::colon:: <identifier> )?
 
-variables_get:
-	variable_get()
-  | (variable_get() ( ::comma:: variable_get() )* #expression_group)
-
-variables_set:
-    variable()
-	| ( variable() ( ::comma:: variable() )* #expression_group)
-
-variable_get:
-	variable()
-  | ::parenthesis_:: expression() ::_parenthesis:: #onlyfirst
-  | (
-		::parenthesis_:: expression() ::_parenthesis::
-	)
-	(
-        <bracket_> expression() ::_bracket:: #table_access
-      | ::point:: <identifier> #table_access
-	)+
+variables:  
+    variable() ( ::comma:: variable() )*
 
 variable:
     <identifier>
+  | ::parenthesis_:: expression() ::_parenthesis:: #onlyfirst
   | (
         <identifier>
       | function_call()
+      | ::parenthesis_:: expression() ::_parenthesis::
     )
     (
-        <bracket_> expression() ::_bracket:: #table_access
+        ::bracket_:: expression() ::_bracket:: #table_access
       | ::point:: <identifier> #table_access
     )+
 
 names:
-    <identifier>
-  | <identifier> ( ::comma:: <identifier> )* #expression_group
+    <identifier> ( ::comma:: <identifier> )*
 
 expressions:
-	expression()
-  | expression() ( ::comma:: expression() )* #expression_group
+    expression() ( ::comma:: expression() )*
 
 expression:
     expression_primary()
@@ -222,11 +205,11 @@ expression_quinary:
 
 expression_senary:
     expression_term()
-    ( ( ::not:: #not | ::length:: #length | ::minus:: #negative | ::pow:: #power | ::plus::)
+    ( ( ::not:: #not | ::length:: #length | ::pow:: #power )
       expression() )?
 
 expression_term:
-    (::minus:: #negative | ::plus:: | ::pow:: #power | ::not:: #not ) expression()
+    ( ::pow:: #power ) expression()
   | <nil>
   | <false>
   | <true>
@@ -234,34 +217,18 @@ expression_term:
   | <longstring>
   | <string>
   | <tpoint>
-  | variable_get()
+  | variable()
   | function_call()
   | function_definition()
   | table_constructor()
 
-//#function_call:
-//    ( <identifier> | ::parenthesis_:: expression() ::_parenthesis:: )
-//    (
-//        <bracket_> expression() ::_bracket:: #table_access
-//      | ::point:: ( <identifier> | function_call() ) #table_access
-//    )*
-//    ( ::colon:: <identifier> #table_access_method)? arguments()
-
 #function_call:
-    (<identifier>
-	 | ::parenthesis_:: expression() ::_parenthesis::
-     | table_access_function())
-     arguments()
-
-table_access_function:
-   ( <identifier> | ::parenthesis_:: expression() ::_parenthesis:: )
-	(
-		((	(<bracket_> expression() ::_bracket:: ) #table_access_self
-			| ::point:: ( <identifier> | function_call() ) #table_access_self )*
-		( ::colon:: <identifier> #table_access_self ))
-	|	((	(<bracket_> expression() ::_bracket:: ) #table_access
-			| ::point:: ( <identifier> | function_call() ) #table_access )*)
-	)
+    ( <identifier> | ::parenthesis_:: expression() ::_parenthesis:: )
+    (
+        ::bracket_:: expression() ::_bracket:: #table_access
+      | ::point:: ( <identifier> | function_call() ) #table_access
+    )*
+    ( ::colon:: <identifier> )? arguments()
 
 #arguments:
     ::parenthesis_:: expressions()? ::_parenthesis::
@@ -279,8 +246,8 @@ _function_body:
     block() #function_body
 
 #parameters:
-    names() ( ::comma:: ::tpoint:: #tpointfcn)?
-  | ::tpoint:: #tpointfcn
+    names() ( ::comma:: ::tpoint:: )?
+  | ::tpoint::
 
 table_constructor:
     ::brace_:: fields()? ::_brace:: #table
@@ -290,6 +257,6 @@ fields:
     ( ::comma:: | ::semicolon:: )?
 
 #field:
-  (  ::bracket_:: expression() ::_bracket:: ::equal:: #field_val
-  | <identifier> ::equal:: #field_name)?
-  expression()
+    ::bracket_:: expression() ::_bracket:: ::equal:: expression()
+  | <identifier> ::equal:: expression()
+  | expression()

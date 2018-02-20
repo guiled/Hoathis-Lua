@@ -13,7 +13,8 @@
     "minimum-stability": "dev",
     "require": {
         "hoa/visitor": "*",
-        "hoa/compiler": "^3.0@dev"
+        "hoa/compiler": "~3.17",
+        "railt/compiler": "dev-master@dev"
     },
     "autoload": {
         "psr-4": {

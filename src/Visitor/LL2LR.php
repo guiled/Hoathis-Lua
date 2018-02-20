@@ -10,33 +10,46 @@ namespace Hoathis\Lua\Visitor;
 class LL2LR implements \Hoa\Visitor\Visit
 {
 
+    protected $precedences = [
+        '#division' => 1,
+        '#floordivision' => 1,
+        '#multiplication' => 1,
+        '#modulo' => 1,
+        '#substraction' => 2,
+        '#addition' => 2
+    ];
+
     public function visit(\Hoa\Visitor\Element $element, &$handle = null, $eldnah = null)
     {
         /* @var $element \Hoa\Compiler\Llk\TreeNode */
-        $children = $element->getChildren();
-        foreach ($children as $child) {
-            $child->accept($this, $handle, $eldnah);
-        }
-
+        $root = $element;
+        $children = $root->getChildren();
+        //echo 'Visit : ', $root->getId(), (isset($this->precedences[$root->getId()]) ? ' Precedence : ' . $this->precedences[$root->getId()] : ''), PHP_EOL;
         /**
          * @link http://www.lua.org/manual/5.3/manual.html#3.4.8 Lua 5.3 Manual § 3.4.8 – Precedence
          * @lua The concatenation ('..') and exponentiation ('^') operators are right associative. All other binary operators are left associative.
          */
-        switch ($element->getId()) {
-            // Division is not commutative, so order is important
-            case '#division':
-                if ($children[1]->getId() === '#multiplication') {
-                    $this->switchInTree($element, $children[1]);
-                }
-                break;
-
-            // Substraction is not commutative, so order is important
-            case '#substraction':
-                if ($children[1]->getId() === '#addition' || $children[1]->getId() === '#substraction') {
-                    $this->switchInTree($element, $children[1]);
-                }
-                break;
+        while ($this->isNodePrecedenceError($root)) {
+            //echo 'switch ', $root->getId(), '(', $children[0]->getValueValue(), ') with ', $children[1]->getId(), PHP_EOL;
+            $this->switchInTree($root, $children[1]);
+            //echo (new \Hoa\Compiler\Visitor\Dump)->visit($root->getParent());
+            $root = $children[1];
+            $children = $root->getChildren();
         }
+
+        foreach ($children as $child) {
+            $child->accept($this, $handle, $eldnah);
+        }
+
+    }
+
+    protected function isNodePrecedenceError(\Hoa\Compiler\Llk\TreeNode $element)
+    {
+        if (!array_key_exists($element->getId(), $this->precedences)) {
+            return false;
+        }
+        return array_key_exists($element->getChild(1)->getId(), $this->precedences)
+            && $this->precedences[$element->getId()] === $this->precedences[$element->getChild(1)->getId()];
     }
 
     protected function switchInTree(\Hoa\Compiler\Llk\TreeNode $element, \Hoa\Compiler\Llk\TreeNode $child)

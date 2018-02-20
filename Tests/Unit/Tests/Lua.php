@@ -60,7 +60,7 @@ class Lua extends atoum\test
 				})
 					->isInstanceOf('mageekguy\atoum\asserter\exception')
 					->hasMessage(sprintf('Lua Code "%s" can not be parsed', $code))
-				->object($lua->code('return nil;')->isParsed())->isIdenticalTo($lua)
+				->object($lua->code('')->isParsed())->isIdenticalTo($lua)
 		;
 	}
 
