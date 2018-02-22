@@ -178,29 +178,32 @@ expressions:
     expression() ( ::comma:: expression() )*
 
 expression:
-    expression_primary()
-    ( ::or:: expression() #or )?
-
-expression_primary:
-    expression_secondary()
-    ( ::and:: expression() #and )?
-
-expression_secondary:
-    expression_tertiary()
-    ( ( <lt> | <gt> | <lte> | <gte> | <nequal> | <dequal> )
-      expression() #comparison )?
-
-expression_tertiary:
     expression_quaternary()
-    ( ::dpoint:: expression() #concatenation )?
+//    expression_primary()
+//    ( ::or:: expression() #or )?
+
+//expression_primary:
+//    expression_secondary()
+//    ( ::and:: expression() #and )?
+
+//expression_secondary:
+//    expression_tertiary()
+//    ( ( <lt> | <gt> | <lte> | <gte> | <nequal> | <dequal> )
+//      expression() #comparison )?
+
+//expression_tertiary:
+//    expression_quaternary()
+//    ( ::dpoint:: expression() #concatenation )?
 
 expression_quaternary:
     expression_quinary()
-    ( ( ::plus:: #addition | ::minus:: #substraction ) expression() )?
+//    ( ( ::plus:: #addition | ::minus:: #substraction ) expression() )?
+    ( ::plus:: #addition expression() )?
 
 expression_quinary:
-    expression_senary()
-    ( ( ::times:: #multiplication | ::div:: #division | ::idiv:: #floordivision | ::modulo:: #modulo )
+    expression_term()
+    (  ::times:: #multiplication 
+//    ( ( ::times:: #multiplication | ::div:: #division | ::idiv:: #floordivision | ::modulo:: #modulo )
       expression() )?
 
 expression_senary:
@@ -232,9 +235,9 @@ expression_term:
 
 #arguments:
     ::parenthesis_:: expressions()? ::_parenthesis::
-  | table_constructor()
-  | <string>
-  | <longstring>
+//  | table_constructor()
+//  | <string>
+//  | <longstring>
 
 function_definition:
     ::function:: function_body() #function_lambda

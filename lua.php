@@ -25,6 +25,18 @@ echo 'Parsed in ', round(1000 * (microtime(true) - $start)) . "ms\n";
 $start = microtime(true);
 $visitor->visit($ast);
 echo 'Executed in ', round(1000 * (microtime(true) - $start)) . "ms\n";
+/*$i=0;
+foreach ($compiler->getTrace() as $element) {
+    if ($element instanceof Hoa\Compiler\Llk\Rule\Entry) {
+        echo str_repeat('>', 0*++$i), 'enter ', $element->getRule(), "\n";
+    } elseif ($element instanceof Hoa\Compiler\Llk\Rule\Token) {
+        echo
+            str_repeat(' ', 0*$i + 1), 'token ', $element->getTokenName(),
+            ', consumed ', $element->getValue(), "\n";
+    } else {
+        echo str_repeat('<', 0*$i--), 'ekzit ', $element->getRule(), "\n";
+    }
+}*/
 /**/
 /*
 use Hoa\Compiler\Llk\Lexer as HoaLexer;
