@@ -116,7 +116,7 @@
 
 
 chunk:
-    block()
+	block()
 
 #block:
 	block_code()
@@ -142,7 +142,7 @@ statement:
   | ::for:: names() ::in:: expressions() ::do:: block() ::end:: #for_in_loop
   | ::function:: function_name() function_body() #function
   | ::local:: ::function:: <identifier> function_body() #local_function
-  | ::local:: names() ( ::equal:: expressions() ) #assignation_local
+  | ::local:: names() ( ::equal:: expressions() )? #assignation_local
 
 return_statement:
     ::return:: expressions()? ::semicolon::? #return
@@ -154,7 +154,7 @@ return_statement:
 function_name:
 	(<identifier> ( ::point:: <identifier> #table_access_self)*
     ::colon:: <identifier> #table_access_self)
-  | (<identifier> ( ::point:: <identifier> #table_access)*)
+  | (<identifier> ::point:: <identifier> #table_access)*
 
 variables_get:
 	variable_get()
@@ -177,12 +177,8 @@ variable_get:
 
 variable:
     <identifier>
-  | (
-        <identifier>
-      | function_call()
-    )
-    (
-        <bracket_> expression() ::_bracket:: #table_access
+  | ( <identifier> | function_call() )
+    ( <bracket_> expression() ::_bracket:: #table_access
       | ::point:: <identifier> #table_access
     )+
 
@@ -226,7 +222,7 @@ expression_senary:
       expression() )?
 
 expression_term:
-    (::minus:: #negative | ::plus:: | ::pow:: #power | ::not:: #not ) expression()
+    ( ::pow:: #power ) expression()
   | <nil>
   | <false>
   | <true>

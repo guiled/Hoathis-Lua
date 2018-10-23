@@ -7,7 +7,7 @@ if ($argc < 2) {
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'vendor/autoload.php';
 /**/
 $compiler = \Hoa\Compiler\Llk::load(
-    new \Hoa\File\Read('Grammar.pp')
+    new \Hoa\File\Read('Grammar.pp'), '\Hoathis\Lua\Debugger'
 );
 $visitor  = new \Hoathis\Lua\Visitor\Interpreter();
 $dump = new \Hoa\Compiler\Visitor\Dump();
@@ -15,16 +15,17 @@ $dump = new \Hoa\Compiler\Visitor\Dump();
 $input    = $argv[1];
 $start = microtime(true);
 $ast      = $compiler->parse($input);
-echo 'OK';
-echo $dump->visit($ast);
+//echo 'OK';
+//echo $dump->visit($ast);
 (new \Hoathis\Lua\Visitor\LL2LR)->visit($ast);
-echo $dump->visit($ast);
-echo 'Parsed in ', round(1000 * (microtime(true) - $start)) . "ms\n";
+//echo $dump->visit($ast);
+//echo 'Parsed in ', round(1000 * (microtime(true) - $start)) . "ms\n";
 
 
 $start = microtime(true);
-$visitor->visit($ast);
-echo 'Executed in ', round(1000 * (microtime(true) - $start)) . "ms\n";
+//$visitor->visit($ast);
+
+//echo 'Executed in ', round(1000 * (microtime(true) - $start)) . "ms\n";
 /**/
 /*
 use Hoa\Compiler\Llk\Lexer as HoaLexer;
